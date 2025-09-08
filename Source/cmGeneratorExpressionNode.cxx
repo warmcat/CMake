@@ -25,7 +25,7 @@
 #include "cmsys/RegularExpression.hxx"
 #include "cmsys/String.h"
 
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmComputeLinkInformation.h"
 #include "cmGeneratorExpression.h"
 #include "cmGeneratorExpressionContext.h"
@@ -749,7 +749,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
             if (CheckPathParameters(ctx, cnt, "GET_ROOT_NAME"_s, args) &&
                 !args.front().empty()) {
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.GetRootName().String();
+                value = cmPath{ value }.GetRootName().String();
               });
             }
             return std::string{};
@@ -761,7 +761,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
             if (CheckPathParameters(ctx, cnt, "GET_ROOT_DIRECTORY"_s, args) &&
                 !args.front().empty()) {
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.GetRootDirectory().String();
+                value = cmPath{ value }.GetRootDirectory().String();
               });
             }
             return std::string{};
@@ -773,7 +773,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
             if (CheckPathParameters(ctx, cnt, "GET_ROOT_PATH"_s, args) &&
                 !args.front().empty()) {
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.GetRootPath().String();
+                value = cmPath{ value }.GetRootPath().String();
               });
             }
             return std::string{};
@@ -785,7 +785,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
             if (CheckPathParameters(ctx, cnt, "GET_FILENAME"_s, args) &&
                 !args.front().empty()) {
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.GetFileName().String();
+                value = cmPath{ value }.GetFileName().String();
               });
             }
             return std::string{};
@@ -807,11 +807,11 @@ static const struct PathNode : public cmGeneratorExpressionNode
               }
               if (lastOnly) {
                 return processList(args.front(), [](std::string& value) {
-                  value = cmCMakePath{ value }.GetExtension().String();
+                  value = cmPath{ value }.GetExtension().String();
                 });
               }
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.GetWideExtension().String();
+                value = cmPath{ value }.GetWideExtension().String();
               });
             }
             return std::string{};
@@ -832,11 +832,11 @@ static const struct PathNode : public cmGeneratorExpressionNode
               }
               if (lastOnly) {
                 return processList(args.front(), [](std::string& value) {
-                  value = cmCMakePath{ value }.GetStem().String();
+                  value = cmPath{ value }.GetStem().String();
                 });
               }
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.GetNarrowStem().String();
+                value = cmPath{ value }.GetNarrowStem().String();
               });
             }
             return std::string{};
@@ -848,7 +848,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
             if (CheckPathParameters(ctx, cnt, "GET_RELATIVE_PART"_s, args) &&
                 !args.front().empty()) {
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.GetRelativePath().String();
+                value = cmPath{ value }.GetRelativePath().String();
               });
             }
             return std::string{};
@@ -859,7 +859,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              Arguments& args) -> std::string {
             if (CheckPathParameters(ctx, cnt, "GET_PARENT_PATH"_s, args)) {
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.GetParentPath().String();
+                value = cmPath{ value }.GetParentPath().String();
               });
             }
             return std::string{};
@@ -869,7 +869,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              GeneratorExpressionContent const* cnt,
              Arguments& args) -> std::string {
             return CheckPathParameters(ctx, cnt, "HAS_ROOT_NAME"_s, args)
-              ? ToString(cmCMakePath{ args.front() }.HasRootName())
+              ? ToString(cmPath{ args.front() }.HasRootName())
               : std::string{ "0" };
           } },
         { "HAS_ROOT_DIRECTORY"_s,
@@ -877,7 +877,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              GeneratorExpressionContent const* cnt,
              Arguments& args) -> std::string {
             return CheckPathParameters(ctx, cnt, "HAS_ROOT_DIRECTORY"_s, args)
-              ? ToString(cmCMakePath{ args.front() }.HasRootDirectory())
+              ? ToString(cmPath{ args.front() }.HasRootDirectory())
               : std::string{ "0" };
           } },
         { "HAS_ROOT_PATH"_s,
@@ -885,7 +885,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              GeneratorExpressionContent const* cnt,
              Arguments& args) -> std::string {
             return CheckPathParameters(ctx, cnt, "HAS_ROOT_PATH"_s, args)
-              ? ToString(cmCMakePath{ args.front() }.HasRootPath())
+              ? ToString(cmPath{ args.front() }.HasRootPath())
               : std::string{ "0" };
           } },
         { "HAS_FILENAME"_s,
@@ -893,7 +893,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              GeneratorExpressionContent const* cnt,
              Arguments& args) -> std::string {
             return CheckPathParameters(ctx, cnt, "HAS_FILENAME"_s, args)
-              ? ToString(cmCMakePath{ args.front() }.HasFileName())
+              ? ToString(cmPath{ args.front() }.HasFileName())
               : std::string{ "0" };
           } },
         { "HAS_EXTENSION"_s,
@@ -902,7 +902,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              Arguments& args) -> std::string {
             return CheckPathParameters(ctx, cnt, "HAS_EXTENSION"_s, args) &&
                 !args.front().empty()
-              ? ToString(cmCMakePath{ args.front() }.HasExtension())
+              ? ToString(cmPath{ args.front() }.HasExtension())
               : std::string{ "0" };
           } },
         { "HAS_STEM"_s,
@@ -910,7 +910,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              GeneratorExpressionContent const* cnt,
              Arguments& args) -> std::string {
             return CheckPathParameters(ctx, cnt, "HAS_STEM"_s, args)
-              ? ToString(cmCMakePath{ args.front() }.HasStem())
+              ? ToString(cmPath{ args.front() }.HasStem())
               : std::string{ "0" };
           } },
         { "HAS_RELATIVE_PART"_s,
@@ -918,7 +918,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              GeneratorExpressionContent const* cnt,
              Arguments& args) -> std::string {
             return CheckPathParameters(ctx, cnt, "HAS_RELATIVE_PART"_s, args)
-              ? ToString(cmCMakePath{ args.front() }.HasRelativePath())
+              ? ToString(cmPath{ args.front() }.HasRelativePath())
               : std::string{ "0" };
           } },
         { "HAS_PARENT_PATH"_s,
@@ -926,7 +926,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              GeneratorExpressionContent const* cnt,
              Arguments& args) -> std::string {
             return CheckPathParameters(ctx, cnt, "HAS_PARENT_PATH"_s, args)
-              ? ToString(cmCMakePath{ args.front() }.HasParentPath())
+              ? ToString(cmPath{ args.front() }.HasParentPath())
               : std::string{ "0" };
           } },
         { "IS_ABSOLUTE"_s,
@@ -934,7 +934,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              GeneratorExpressionContent const* cnt,
              Arguments& args) -> std::string {
             return CheckPathParameters(ctx, cnt, "IS_ABSOLUTE"_s, args)
-              ? ToString(cmCMakePath{ args.front() }.IsAbsolute())
+              ? ToString(cmPath{ args.front() }.IsAbsolute())
               : std::string{ "0" };
           } },
         { "IS_RELATIVE"_s,
@@ -942,7 +942,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              GeneratorExpressionContent const* cnt,
              Arguments& args) -> std::string {
             return CheckPathParameters(ctx, cnt, "IS_RELATIVE"_s, args)
-              ? ToString(cmCMakePath{ args.front() }.IsRelative())
+              ? ToString(cmPath{ args.front() }.IsRelative())
               : std::string{ "0" };
           } },
         { "IS_PREFIX"_s,
@@ -958,11 +958,11 @@ static const struct PathNode : public cmGeneratorExpressionNode
                                                 : "IS_PREFIX"_s,
                                       args.size(), 2)) {
               if (normalize) {
-                return ToString(cmCMakePath{ args[0] }.Normal().IsPrefix(
-                  cmCMakePath{ args[1] }.Normal()));
+                return ToString(cmPath{ args[0] }.Normal().IsPrefix(
+                  cmPath{ args[1] }.Normal()));
               }
               return ToString(
-                cmCMakePath{ args[0] }.IsPrefix(cmCMakePath{ args[1] }));
+                cmPath{ args[0] }.IsPrefix(cmPath{ args[1] }));
             }
             return std::string{};
           } },
@@ -980,9 +980,9 @@ static const struct PathNode : public cmGeneratorExpressionNode
                                       args.size(), 1)) {
               return processList(
                 args.front(), [normalize](std::string& value) {
-                  auto path = cmCMakePath{ value, cmCMakePath::auto_format };
-                  value = normalize ? path.Normal().GenericString()
-                                    : path.GenericString();
+                  auto path = cmPath{ value };
+                  value = normalize ? path.Normal().GetString()
+                                    : path.GetString();
                 });
             }
             return std::string{};
@@ -1001,7 +1001,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
                                       args.size(), 1)) {
               return processList(
                 args.front(), [normalize](std::string& value) {
-                  auto path = cmCMakePath{ value };
+                  auto path = cmPath{ value };
                   value = normalize ? path.Normal().NativeString()
                                     : path.NativeString();
                 });
@@ -1018,9 +1018,9 @@ static const struct PathNode : public cmGeneratorExpressionNode
               args.advance(1);
 
               return processList(list, [&args](std::string& value) {
-                cmCMakePath path{ value };
+                cmPath path{ value };
                 for (auto const& p : args) {
-                  path /= p;
+                  path /= cmPath(p);
                 }
                 value = path.String();
               });
@@ -1034,7 +1034,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
             if (CheckPathParameters(ctx, cnt, "REMOVE_FILENAME"_s, args) &&
                 !args.front().empty()) {
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.RemoveFileName().String();
+                value = cmPath{ value }.RemoveFileName().String();
               });
             }
             return std::string{};
@@ -1045,8 +1045,8 @@ static const struct PathNode : public cmGeneratorExpressionNode
              Arguments& args) -> std::string {
             if (CheckPathParameters(ctx, cnt, "REPLACE_FILENAME"_s, args, 2)) {
               return processList(args.front(), [&args](std::string& value) {
-                value = cmCMakePath{ value }
-                          .ReplaceFileName(cmCMakePath{ args[1] })
+                value = cmPath{ value }
+                          .ReplaceFileName(cmPath{ args[1] })
                           .String();
               });
             }
@@ -1069,11 +1069,11 @@ static const struct PathNode : public cmGeneratorExpressionNode
               }
               if (lastOnly) {
                 return processList(args.front(), [](std::string& value) {
-                  value = cmCMakePath{ value }.RemoveExtension().String();
+                  value = cmPath{ value }.RemoveExtension().String();
                 });
               }
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.RemoveWideExtension().String();
+                value = cmPath{ value }.RemoveWideExtension().String();
               });
             }
             return std::string{};
@@ -1093,14 +1093,14 @@ static const struct PathNode : public cmGeneratorExpressionNode
                                       args.size(), 2)) {
               if (lastOnly) {
                 return processList(args.front(), [&args](std::string& value) {
-                  value = cmCMakePath{ value }
-                            .ReplaceExtension(cmCMakePath{ args[1] })
+                  value = cmPath{ value }
+                            .ReplaceExtension(cmPath{ args[1] })
                             .String();
                 });
               }
               return processList(args.front(), [&args](std::string& value) {
-                value = cmCMakePath{ value }
-                          .ReplaceWideExtension(cmCMakePath{ args[1] })
+                value = cmPath{ value }
+                          .ReplaceWideExtension(cmPath{ args[1] })
                           .String();
               });
             }
@@ -1113,7 +1113,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
             if (CheckPathParameters(ctx, cnt, "NORMAL_PATH"_s, args) &&
                 !args.front().empty()) {
               return processList(args.front(), [](std::string& value) {
-                value = cmCMakePath{ value }.Normal().String();
+                value = cmPath{ value }.Normal().String();
               });
             }
             return std::string{};
@@ -1124,7 +1124,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
              Arguments& args) -> std::string {
             if (CheckPathParameters(ctx, cnt, "RELATIVE_PATH"_s, args, 2)) {
               return processList(args.front(), [&args](std::string& value) {
-                value = cmCMakePath{ value }.Relative(args[1]).String();
+                value = cmPath{ value }.Relative(cmPath{ args[1] }).String();
               });
             }
             return std::string{};
@@ -1143,7 +1143,7 @@ static const struct PathNode : public cmGeneratorExpressionNode
                                       args.size(), 2)) {
               return processList(
                 args.front(), [&args, normalize](std::string& value) {
-                  auto path = cmCMakePath{ value }.Absolute(args[1]);
+                  auto path = cmPath{ value }.Absolute(cmPath{ args[1] });
                   value = normalize ? path.Normal().String() : path.String();
                 });
             }
@@ -1174,7 +1174,7 @@ static const struct PathEqualNode : public cmGeneratorExpressionNode
     GeneratorExpressionContent const* /*content*/,
     cmGeneratorExpressionDAGChecker* /*dagChecker*/) const override
   {
-    return cmCMakePath{ parameters[0] } == cmCMakePath{ parameters[1] } ? "1"
+    return cmPath{ parameters[0] } == cmPath{ parameters[1] } ? "1"
                                                                         : "0";
   }
 } pathEqualNode;

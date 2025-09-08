@@ -20,7 +20,7 @@
 #include "cmsys/FStream.hxx"
 #include "cmsys/SystemInformation.hxx"
 
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmCryptoHash.h"
 #include "cmExperimental.h"
 #include "cmFileLock.h"
@@ -953,8 +953,8 @@ void cmInstrumentation::AppendTraceEvent(Json::Value& trace,
   } else if (snippetData["role"] == "link") {
     name.append(snippetData["target"].asString());
   } else if (snippetData["role"] == "install") {
-    cmCMakePath workingDir(snippetData["workingDir"].asCString());
-    std::string lastDirName = workingDir.GetFileName().String();
+    cmPath workingDir(snippetData["workingDir"].asCString());
+    std::string lastDirName = workingDir.GetFileName();
     name.append(lastDirName);
   } else if (snippetData["role"] == "custom") {
     name.append(snippetData["command"].asString());

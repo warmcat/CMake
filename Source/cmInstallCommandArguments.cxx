@@ -9,7 +9,7 @@
 #include <cm/string_view>
 #include <cmext/string_view>
 
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmGeneratorExpression.h"
 #include "cmMakefile.h"
 #include "cmMessageType.h"
@@ -47,7 +47,7 @@ cmInstallCommandArguments::cmInstallCommandArguments(
         // We can't be certain if a warning is appropriate if there are any
         // generator expressions
         if (cmGeneratorExpression::Find(arg) == cm::string_view::npos &&
-            arg != cmCMakePath(arg).Normal().String()) {
+            arg != cmPath(arg).Normal().String()) {
           makefile.IssueMessage(
             MessageType::AUTHOR_WARNING,
             cmPolicies::GetPolicyWarning(cmPolicies::CMP0177));
@@ -58,7 +58,7 @@ cmInstallCommandArguments::cmInstallCommandArguments(
     case cmPolicies::NEW:
       normalizeDest = [this](cm::string_view arg) -> ArgumentParser::Continue {
         if (cmGeneratorExpression::Find(arg) == cm::string_view::npos) {
-          this->Destination = cmCMakePath(arg).Normal().String();
+          this->Destination = cmPath(arg).Normal().String();
         } else {
           this->Destination =
             cmStrCat("$<PATH:CMAKE_PATH,NORMALIZE,", arg, '>');

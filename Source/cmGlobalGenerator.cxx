@@ -26,7 +26,7 @@
 #include "cm_codecvt_Encoding.hxx"
 
 #include "cmAlgorithms.h"
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmCPackPropertiesGenerator.h"
 #include "cmComputeTargetDepends.h"
 #include "cmCryptoHash.h"
@@ -281,13 +281,13 @@ void cmGlobalGenerator::ResolveLanguageCompiler(std::string const& lang,
 
   std::string changeVars;
   if (cname && !optional) {
-    cmCMakePath cachedPath;
+    cmPath cachedPath;
     if (!cmSystemTools::FileIsFullPath(*cname)) {
       cachedPath = cmSystemTools::FindProgram(*cname);
     } else {
       cachedPath = *cname;
     }
-    cmCMakePath foundPath = path;
+    cmPath foundPath = path;
     if (foundPath.Normal() != cachedPath.Normal()) {
       cmValue cvars = this->GetCMakeInstance()->GetState()->GetGlobalProperty(
         "__CMAKE_DELETE_CACHE_CHANGE_VARS_");

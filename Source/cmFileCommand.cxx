@@ -31,7 +31,7 @@
 
 #include "cmArgumentParser.h"
 #include "cmArgumentParserTypes.h"
-#include "cmCMakePath.h"
+#include "cmPath.hh"
 #include "cmCryptoHash.h"
 #include "cmELF.h"
 #include "cmExecutionStatus.h"
@@ -1357,10 +1357,11 @@ bool HandleRealPathCommand(std::vector<std::string> const& args,
   }
 
   auto computeNewPath = [=](std::string const& in, std::string& result) {
-    auto path = cmCMakePath{ in };
+    auto path = cmPath{ in };
     if (path.IsRelative()) {
-      auto basePath = cmCMakePath{ *arguments.BaseDirectory };
-      path = basePath.Append(path);
+      auto basePath = cmPath{ *arguments.BaseDirectory };
+      basePath /= path;
+      path = basePath;
     }
     result = cmSystemTools::GetRealPath(path.String());
   };

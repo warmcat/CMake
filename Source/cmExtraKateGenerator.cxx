@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmGeneratedFileStream.h"
 #include "cmGeneratorTarget.h"
 #include "cmGlobalGenerator.h"
@@ -257,7 +257,7 @@ std::string cmExtraKateGenerator::GenerateFilesString(
 
   // check for the VCS files except when "forced" to "FILES" mode:
   if (mode != "LIST") {
-    cmCMakePath startDir(lg.GetSourceDirectory(), cmCMakePath::auto_format);
+    cmPath startDir(lg.GetSourceDirectory());
     // move the directories up to the root directory to see whether we are in
     // a subdir of a svn, git, hg or fossil checkout
     for (;;) {

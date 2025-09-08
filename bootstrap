@@ -311,8 +311,8 @@ CMAKE_CXX_SOURCES="\
   cmCMakeLanguageCommand \
   cmCMakeMinimumRequired \
   cmList \
-  cmCMakePath \
-  cmCMakePathCommand \
+  cmPath \
+  cmPathCommand \
   cmCMakePolicyCommand \
   cmCPackPropertiesGenerator \
   cmCacheManager \

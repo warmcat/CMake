@@ -20,7 +20,7 @@
 
 #include "cmArgumentParser.h"
 #include "cmArgumentParserTypes.h"
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmExecutionStatus.h"
 #include "cmExperimental.h"
 #include "cmExportSet.h"
@@ -1812,13 +1812,13 @@ bool HandleDirectoryMode(std::vector<std::string> const& args,
       // preserves it if present
       switch (status.GetMakefile().GetPolicyStatus(cmPolicies::CMP0177)) {
         case cmPolicies::NEW:
-          destination = cmCMakePath(args[i]).Normal().String();
+          destination = cmPath(args[i]).Normal().String();
           break;
         case cmPolicies::WARN:
           // We can't be certain if a warning is appropriate if there are any
           // generator expressions
           if (cmGeneratorExpression::Find(args[i]) == cm::string_view::npos &&
-              args[i] != cmCMakePath(args[i]).Normal().String()) {
+              args[i] != cmPath(args[i]).Normal().String()) {
             status.GetMakefile().IssueMessage(
               MessageType::AUTHOR_WARNING,
               cmPolicies::GetPolicyWarning(cmPolicies::CMP0177));

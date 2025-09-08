@@ -122,8 +122,8 @@ add_library(
   cmCacheManager.h
   cmCLocaleEnvironmentScope.h
   cmCLocaleEnvironmentScope.cxx
-  cmCMakePath.h
-  cmCMakePath.cxx
+  cmPath.h
+  cmPath.cxx
   cmCMakePresetsErrors.cxx
   cmCMakePresetsErrors.h
   cmCMakePresetsGraph.cxx
@@ -560,8 +560,8 @@ add_library(
   cmCMakeLanguageCommand.h
   cmCMakeMinimumRequired.cxx
   cmCMakeMinimumRequired.h
-  cmCMakePathCommand.h
-  cmCMakePathCommand.cxx
+  cmPathCommand.h
+  cmPathCommand.cxx
   cmCMakePkgConfigCommand.h
   cmCMakePkgConfigCommand.cxx
   cmCMakePolicyCommand.cxx
@@ -1029,7 +1029,7 @@ if(CMake_BUILD_PCH)
     "$<$<COMPILE_LANGUAGE:CXX>:cmGeneratorExpression.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:cmArgumentParser.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:cmake.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:cmCMakePath.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:cmPath.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:cmCurl.h>")
 
     set_source_files_properties(

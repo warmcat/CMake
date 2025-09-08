@@ -33,7 +33,7 @@
 #include "cm_sys_stat.h"
 
 #include "cmBuildOptions.h"
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmCMakePresetsGraph.h"
 #include "cmCommandLineArgument.h"
 #include "cmCommands.h"
@@ -673,7 +673,7 @@ bool cmake::SetCacheArgs(std::vector<std::string> const& args)
   auto PrefixLambda = [&](std::string const& path, cmake* state) -> bool {
     std::string const var = "CMAKE_INSTALL_PREFIX";
     cmStateEnums::CacheEntryType type = cmStateEnums::PATH;
-    cmCMakePath absolutePath(path);
+    cmPath absolutePath(path);
     if (absolutePath.IsAbsolute()) {
 #ifndef CMAKE_BOOTSTRAP
       state->UnprocessedPresetVariables.erase(var);

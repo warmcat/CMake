@@ -49,7 +49,7 @@
 #if !defined(CMAKE_BOOTSTRAP) || defined(CMAKE_BOOTSTRAP_MAKEFILES)
 #  include <algorithm>
 
-#  include "cmCMakePath.h"
+#  include "cmPath.h"
 #  include "cmProcessTools.h"
 #endif
 
@@ -243,7 +243,7 @@ private:
       auto path =
         cmTrimWhitespace(this->Line.c_str() + this->IncludePrefix.size());
       cmSystemTools::ConvertToLongPath(path);
-      this->DepFile << cmCMakePath(path).GenericString() << std::endl;
+      this->DepFile << cmPath(path).GenericString() << std::endl;
     } else {
       this->Output << this->Line << std::endl;
     }

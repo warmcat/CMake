@@ -14,7 +14,7 @@
 #include <cmext/algorithm>
 #include <cmext/string_view>
 
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmConfigureLog.h"
 #include "cmExecutionStatus.h"
 #include "cmList.h"
@@ -537,11 +537,11 @@ void cmFindBase::NormalizeFindResult()
     std::string value;
     if (!existingValue->empty()) {
       value =
-        cmCMakePath(*existingValue, cmCMakePath::auto_format)
-          .Absolute(cmCMakePath(
+        cmPath(*existingValue)
+          .Absolute(cmPath(
             this->Makefile->GetCMakeInstance()->GetCMakeWorkingDirectory()))
           .Normal()
-          .GenericString();
+          .GetString();
       if (!cmSystemTools::FileExists(value, false)) {
         value = *existingValue;
       }

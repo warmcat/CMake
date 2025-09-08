@@ -14,7 +14,7 @@
 #include "cmsys/FStream.hxx"
 #include "cmsys/RegularExpression.hxx"
 
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmCTestLaunchReporter.h"
 #include "cmGlobalGenerator.h"
 #include "cmInstrumentation.h"
@@ -162,7 +162,7 @@ bool cmCTestLaunch::ParseArguments(int argc, char const* const* argv)
                this->Reporter.OptionTargetName, ".dir");
   }
   if (!this->Reporter.OptionObjectDir.empty() &&
-      !cmCMakePath(this->Reporter.OptionObjectDir).IsAbsolute() &&
+      !cmPath(this->Reporter.OptionObjectDir).IsAbsolute() &&
       !this->Reporter.OptionBuildDir.empty()) {
     this->Reporter.OptionObjectDir = cmStrCat(
       this->Reporter.OptionBuildDir, '/', this->Reporter.OptionObjectDir);

@@ -10,5 +10,5 @@
 
 class cmExecutionStatus;
 
-bool cmCMakePathCommand(std::vector<std::string> const& args,
-                        cmExecutionStatus& status);
+bool cmPathCommand(std::vector<std::string> const& args,
+                   cmExecutionStatus& status);

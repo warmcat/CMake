@@ -16,7 +16,7 @@
 
 #include "cmsys/RegularExpression.hxx"
 
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmExpandedCommandArgument.h"
 #include "cmList.h"
 #include "cmMakefile.h"
@@ -654,7 +654,7 @@ bool cmConditionEvaluator::HandleLevel2(cmArgumentList& newArgs,
 
         cmValue lhs = this->GetVariableOrString(*args.current);
         cmValue rhs = this->GetVariableOrString(*args.nextnext);
-        auto const result = cmCMakePath{ *lhs } == cmCMakePath{ *rhs };
+        auto const result = cmPath{ *lhs } == cmPath{ *rhs };
         newArgs.ReduceTwoArgs(result, args);
       }
 

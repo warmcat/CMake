@@ -1,6 +1,6 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file LICENSE.rst or https://cmake.org/licensing for details.  */
-#include "cmCMakePathCommand.h"
+#include "cmPathCommand.h"
 
 #include <functional>
 #include <iomanip>
@@ -16,7 +16,7 @@
 
 #include "cmArgumentParser.h"
 #include "cmArgumentParserTypes.h"
-#include "cmCMakePath.h"
+#include "cmPath.h"
 #include "cmExecutionStatus.h"
 #include "cmList.h"
 #include "cmMakefile.h"
@@ -125,43 +125,43 @@ bool HandleGetCommand(std::vector<std::string> const& args,
                       cmExecutionStatus& status)
 {
   static std::map<cm::string_view,
-                  std::function<cmCMakePath(cmCMakePath const&, bool)>> const
+                  std::function<cmPath(cmPath const&, bool)>> const
     actions{ { "ROOT_NAME"_s,
-               [](cmCMakePath const& path, bool) -> cmCMakePath {
+               [](cmPath const& path, bool) -> cmPath {
                  return path.GetRootName();
                } },
              { "ROOT_DIRECTORY"_s,
-               [](cmCMakePath const& path, bool) -> cmCMakePath {
+               [](cmPath const& path, bool) -> cmPath {
                  return path.GetRootDirectory();
                } },
              { "ROOT_PATH"_s,
-               [](cmCMakePath const& path, bool) -> cmCMakePath {
+               [](cmPath const& path, bool) -> cmPath {
                  return path.GetRootPath();
                } },
              { "FILENAME"_s,
-               [](cmCMakePath const& path, bool) -> cmCMakePath {
+               [](cmPath const& path, bool) -> cmPath {
                  return path.GetFileName();
                } },
              { "EXTENSION"_s,
-               [](cmCMakePath const& path, bool last_only) -> cmCMakePath {
+               [](cmPath const& path, bool last_only) -> cmPath {
                  if (last_only) {
                    return path.GetExtension();
                  }
                  return path.GetWideExtension();
                } },
              { "STEM"_s,
-               [](cmCMakePath const& path, bool last_only) -> cmCMakePath {
+               [](cmPath const& path, bool last_only) -> cmPath {
                  if (last_only) {
                    return path.GetStem();
                  }
                  return path.GetNarrowStem();
                } },
              { "RELATIVE_PART"_s,
-               [](cmCMakePath const& path, bool) -> cmCMakePath {
+               [](cmPath const& path, bool) -> cmPath {
                  return path.GetRelativePath();
                } },
              { "PARENT_PATH"_s,
-               [](cmCMakePath const& path, bool) -> cmCMakePath {
+               [](cmPath const& path, bool) -> cmPath {
                  return path.GetParentPath();
                } } };
 
@@ -234,14 +234,13 @@ bool HandleSetCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  auto path =
-    cmCMakePath(parser.GetInputs().front(), cmCMakePath::native_format);
+  auto path = cmPath(parser.GetInputs().front());
 
   if (arguments.Normalize) {
     path = path.Normal();
   }
 
-  status.GetMakefile().AddDefinition(args[1], path.GenericString());
+  status.GetMakefile().AddDefinition(args[1], path.GetString());
 
   return true;
 }
@@ -262,9 +261,9 @@ bool HandleAppendCommand(std::vector<std::string> const& args,
     return true;
   }
 
-  cmCMakePath path(status.GetMakefile().GetSafeDefinition(args[1]));
+  cmPath path(status.GetMakefile().GetSafeDefinition(args[1]));
   for (auto const& input : parser.GetInputs()) {
-    path /= input;
+    path /= cmPath(input);
   }
 
   status.GetMakefile().AddDefinition(
@@ -289,9 +288,9 @@ bool HandleAppendStringCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  cmCMakePath path(inputPath);
+  cmPath path(inputPath);
   for (auto const& input : parser.GetInputs()) {
-    path += input;
+    path += cmPath(input);
   }
 
   status.GetMakefile().AddDefinition(
@@ -321,7 +320,7 @@ bool HandleRemoveFilenameCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  cmCMakePath path(inputPath);
+  cmPath path(inputPath);
   path.RemoveFileName();
 
   status.GetMakefile().AddDefinition(
@@ -351,9 +350,9 @@ bool HandleReplaceFilenameCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  cmCMakePath path(inputPath);
+  cmPath path(inputPath);
   path.ReplaceFileName(
-    parser.GetInputs().empty() ? "" : parser.GetInputs().front());
+    cmPath(parser.GetInputs().empty() ? "" : parser.GetInputs().front()));
 
   status.GetMakefile().AddDefinition(
     arguments.Output ? *arguments.Output : args[1], path.String());
@@ -390,7 +389,7 @@ bool HandleRemoveExtensionCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  cmCMakePath path(inputPath);
+  cmPath path(inputPath);
 
   if (arguments.LastOnly) {
     path.RemoveExtension();
@@ -433,8 +432,8 @@ bool HandleReplaceExtensionCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  cmCMakePath path(inputPath);
-  cmCMakePath extension(
+  cmPath path(inputPath);
+  cmPath extension(
     parser.GetInputs().empty() ? "" : parser.GetInputs().front());
 
   if (arguments.LastOnly) {
@@ -470,7 +469,7 @@ bool HandleNormalPathCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  auto path = cmCMakePath(inputPath).Normal();
+  auto path = cmPath(inputPath).Normal();
 
   status.GetMakefile().AddDefinition(
     arguments.Output ? *arguments.Output : args[1], path.String());
@@ -480,7 +479,7 @@ bool HandleNormalPathCommand(std::vector<std::string> const& args,
 
 bool HandleTransformPathCommand(
   std::vector<std::string> const& args, cmExecutionStatus& status,
-  std::function<cmCMakePath(cmCMakePath const&,
+  std::function<cmPath(cmPath const&,
                             std::string const& base)> const& transform,
   bool normalizeOption = false)
 {
@@ -520,7 +519,7 @@ bool HandleTransformPathCommand(
     return false;
   }
 
-  auto path = transform(cmCMakePath(inputPath), baseDirectory);
+  auto path = transform(cmPath(inputPath), baseDirectory);
   if (arguments.Normalize) {
     path = path.Normal();
   }
@@ -536,8 +535,8 @@ bool HandleRelativePathCommand(std::vector<std::string> const& args,
 {
   return HandleTransformPathCommand(
     args, status,
-    [](cmCMakePath const& path, std::string const& base) -> cmCMakePath {
-      return path.Relative(base);
+    [](cmPath const& path, std::string const& base) -> cmPath {
+      return path.Relative(cmPath(base));
     });
 }
 
@@ -546,8 +545,8 @@ bool HandleAbsolutePathCommand(std::vector<std::string> const& args,
 {
   return HandleTransformPathCommand(
     args, status,
-    [](cmCMakePath const& path, std::string const& base) -> cmCMakePath {
-      return path.Absolute(base);
+    [](cmPath const& path, std::string const& base) -> cmPath {
+      return path.Absolute(cmPath(base));
     },
     true);
 }
@@ -578,7 +577,7 @@ bool HandleNativePathCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  cmCMakePath path(inputPath);
+  cmPath path(inputPath);
   if (arguments.Normalize) {
     path = path.Normal();
   }
@@ -636,14 +635,12 @@ bool HandleConvertCommand(std::vector<std::string> const& args,
   }
 
   for (auto& path : paths) {
-    auto p = cmCMakePath(path,
-                         action == cmakePath ? cmCMakePath::native_format
-                                             : cmCMakePath::generic_format);
+    auto p = cmPath(path);
     if (arguments.Normalize) {
       p = p.Normal();
     }
     if (action == cmakePath) {
-      path = p.GenericString();
+      path = p.GetString();
     } else {
       path = p.NativeString();
     }
@@ -664,14 +661,14 @@ bool HandleCompareCommand(std::vector<std::string> const& args,
   }
 
   static std::map<cm::string_view,
-                  std::function<bool(cmCMakePath const&,
-                                     cmCMakePath const&)>> const operators{
+                  std::function<bool(cmPath const&,
+                                     cmPath const&)>> const operators{
     { "EQUAL"_s,
-      [](cmCMakePath const& path1, cmCMakePath const& path2) -> bool {
+      [](cmPath const& path1, cmPath const& path2) -> bool {
         return path1 == path2;
       } },
     { "NOT_EQUAL"_s,
-      [](cmCMakePath const& path1, cmCMakePath const& path2) -> bool {
+      [](cmPath const& path1, cmPath const& path2) -> bool {
         return path1 != path2;
       } }
   };
@@ -688,8 +685,8 @@ bool HandleCompareCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  cmCMakePath path1(args[1]);
-  cmCMakePath path2(args[3]);
+  cmPath path1(args[1]);
+  cmPath path2(args[3]);
   auto result = op->second(path1, path2);
 
   status.GetMakefile().AddDefinitionBool(args[4], result);
@@ -699,7 +696,7 @@ bool HandleCompareCommand(std::vector<std::string> const& args,
 
 bool HandleHasItemCommand(
   std::vector<std::string> const& args, cmExecutionStatus& status,
-  std::function<bool(cmCMakePath const&)> const& has_item)
+  std::function<bool(cmPath const&)> const& has_item)
 {
   if (args.size() != 3) {
     status.SetError(
@@ -717,7 +714,7 @@ bool HandleHasItemCommand(
     return false;
   }
 
-  cmCMakePath path(inputPath);
+  cmPath path(inputPath);
   auto result = has_item(path);
 
   status.GetMakefile().AddDefinitionBool(args[2], result);
@@ -730,7 +727,7 @@ bool HandleHasRootNameCommand(std::vector<std::string> const& args,
 {
   return HandleHasItemCommand(
     args, status,
-    [](cmCMakePath const& path) -> bool { return path.HasRootName(); });
+    [](cmPath const& path) -> bool { return path.HasRootName(); });
 }
 
 bool HandleHasRootDirectoryCommand(std::vector<std::string> const& args,
@@ -738,7 +735,7 @@ bool HandleHasRootDirectoryCommand(std::vector<std::string> const& args,
 {
   return HandleHasItemCommand(
     args, status,
-    [](cmCMakePath const& path) -> bool { return path.HasRootDirectory(); });
+    [](cmPath const& path) -> bool { return path.HasRootDirectory(); });
 }
 
 bool HandleHasRootPathCommand(std::vector<std::string> const& args,
@@ -746,7 +743,7 @@ bool HandleHasRootPathCommand(std::vector<std::string> const& args,
 {
   return HandleHasItemCommand(
     args, status,
-    [](cmCMakePath const& path) -> bool { return path.HasRootPath(); });
+    [](cmPath const& path) -> bool { return path.HasRootPath(); });
 }
 
 bool HandleHasFilenameCommand(std::vector<std::string> const& args,
@@ -754,7 +751,7 @@ bool HandleHasFilenameCommand(std::vector<std::string> const& args,
 {
   return HandleHasItemCommand(
     args, status,
-    [](cmCMakePath const& path) -> bool { return path.HasFileName(); });
+    [](cmPath const& path) -> bool { return path.HasFileName(); });
 }
 
 bool HandleHasExtensionCommand(std::vector<std::string> const& args,
@@ -762,7 +759,7 @@ bool HandleHasExtensionCommand(std::vector<std::string> const& args,
 {
   return HandleHasItemCommand(
     args, status,
-    [](cmCMakePath const& path) -> bool { return path.HasExtension(); });
+    [](cmPath const& path) -> bool { return path.HasExtension(); });
 }
 
 bool HandleHasStemCommand(std::vector<std::string> const& args,
@@ -770,7 +767,7 @@ bool HandleHasStemCommand(std::vector<std::string> const& args,
 {
   return HandleHasItemCommand(
     args, status,
-    [](cmCMakePath const& path) -> bool { return path.HasStem(); });
+    [](cmPath const& path) -> bool { return path.HasStem(); });
 }
 
 bool HandleHasRelativePartCommand(std::vector<std::string> const& args,
@@ -778,7 +775,7 @@ bool HandleHasRelativePartCommand(std::vector<std::string> const& args,
 {
   return HandleHasItemCommand(
     args, status,
-    [](cmCMakePath const& path) -> bool { return path.HasRelativePath(); });
+    [](cmPath const& path) -> bool { return path.HasRelativePath(); });
 }
 
 bool HandleHasParentPathCommand(std::vector<std::string> const& args,
@@ -786,7 +783,7 @@ bool HandleHasParentPathCommand(std::vector<std::string> const& args,
 {
   return HandleHasItemCommand(
     args, status,
-    [](cmCMakePath const& path) -> bool { return path.HasParentPath(); });
+    [](cmPath const& path) -> bool { return path.HasParentPath(); });
 }
 
 bool HandleIsAbsoluteCommand(std::vector<std::string> const& args,
@@ -807,7 +804,7 @@ bool HandleIsAbsoluteCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  bool isAbsolute = cmCMakePath(inputPath).IsAbsolute();
+  bool isAbsolute = cmPath(inputPath).IsAbsolute();
 
   status.GetMakefile().AddDefinitionBool(args[2], isAbsolute);
 
@@ -832,7 +829,7 @@ bool HandleIsRelativeCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  bool isRelative = cmCMakePath(inputPath).IsRelative();
+  bool isRelative = cmPath(inputPath).IsRelative();
 
   status.GetMakefile().AddDefinitionBool(args[2], isRelative);
 
@@ -872,9 +869,9 @@ bool HandleIsPrefixCommand(std::vector<std::string> const& args,
   bool isPrefix;
   if (arguments.Normalize) {
     isPrefix =
-      cmCMakePath(inputPath).Normal().IsPrefix(cmCMakePath(input).Normal());
+      cmPath(inputPath).Normal().IsPrefix(cmPath(input).Normal());
   } else {
-    isPrefix = cmCMakePath(inputPath).IsPrefix(input);
+    isPrefix = cmPath(inputPath).IsPrefix(cmPath(input));
   }
 
   status.GetMakefile().AddDefinitionBool(output, isPrefix);
@@ -902,7 +899,7 @@ bool HandleHashCommand(std::vector<std::string> const& args,
     return false;
   }
 
-  auto hash = hash_value(cmCMakePath(inputPath).Normal());
+  auto hash = hash_value(cmPath(inputPath).Normal());
 
   std::ostringstream out;
   out << std::setbase(16) << hash;
@@ -913,8 +910,8 @@ bool HandleHashCommand(std::vector<std::string> const& args,
 }
 } // anonymous namespace
 
-bool cmCMakePathCommand(std::vector<std::string> const& args,
-                        cmExecutionStatus& status)
+bool cmPathCommand(std::vector<std::string> const& args,
+                   cmExecutionStatus& status)
 {
   if (args.size() < 2) {
     status.SetError("must be called with at least two arguments.");
