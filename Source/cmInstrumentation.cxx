@@ -954,7 +954,7 @@ void cmInstrumentation::AppendTraceEvent(Json::Value& trace,
     name.append(snippetData["target"].asString());
   } else if (snippetData["role"] == "install") {
     cmPath workingDir(snippetData["workingDir"].asCString());
-    std::string lastDirName = workingDir.GetFileName();
+    std::string lastDirName = workingDir.GetFileName().String();
     name.append(lastDirName);
   } else if (snippetData["role"] == "custom") {
     name.append(snippetData["command"].asString());

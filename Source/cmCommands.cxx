@@ -19,7 +19,7 @@
 #include "cmBuildCommand.h"
 #include "cmCMakeLanguageCommand.h"
 #include "cmCMakeMinimumRequired.h"
-#include "cmCMakePathCommand.h"
+#include "cmPathCommand.h"
 #include "cmCMakePolicyCommand.h"
 #include "cmConfigureFileCommand.h"
 #include "cmContinueCommand.h"
@@ -126,7 +126,7 @@ void GetScriptingCommands(cmState* state)
 
   state->AddBuiltinCommand("cmake_language", cmCMakeLanguageCommand);
   state->AddBuiltinCommand("cmake_minimum_required", cmCMakeMinimumRequired);
-  state->AddBuiltinCommand("cmake_path", cmCMakePathCommand);
+  state->AddBuiltinCommand("cmake_path", cmPathCommand);
   state->AddBuiltinCommand("cmake_policy", cmCMakePolicyCommand);
   state->AddBuiltinCommand("configure_file", cmConfigureFileCommand);
   state->AddBuiltinCommand("execute_process", cmExecuteProcessCommand);

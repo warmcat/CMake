@@ -31,7 +31,7 @@
 
 #include "cmArgumentParser.h"
 #include "cmArgumentParserTypes.h"
-#include "cmPath.hh"
+#include "cmPath.h"
 #include "cmCryptoHash.h"
 #include "cmELF.h"
 #include "cmExecutionStatus.h"

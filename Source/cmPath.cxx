@@ -37,6 +37,11 @@ cmPath::cmPath(std::string&& path)
   this->InternPath(std::move(path));
 }
 
+cmPath::cmPath(cm::string_view path)
+{
+  this->InternPath(std::string(path));
+}
+
 bool cmPath::IsEmpty() const
 {
   return this->BasePathIndex == static_cast<std::size_t>(-1) && this->RelativePath.empty();
@@ -128,10 +133,12 @@ bool cmPath::IsRelative() const
 
 bool cmPath::IsPrefix(const cmPath& other) const
 {
-    auto prefix_it = GetFilesystemPath(*this).begin();
-    auto prefix_end = GetFilesystemPath(*this).end();
-    auto path_it = GetFilesystemPath(other).begin();
-    auto path_end = GetFilesystemPath(other).end();
+    auto this_p = GetFilesystemPath(*this);
+    auto other_p = GetFilesystemPath(other);
+    auto prefix_it = this_p.begin();
+    auto prefix_end = this_p.end();
+    auto path_it = other_p.begin();
+    auto path_end = other_p.end();
 
     while (prefix_it != prefix_end && path_it != path_end &&
            *prefix_it == *path_it) {
@@ -241,7 +248,7 @@ cmPath cmPath::GetWideExtension() const
 
     auto pos = file.find('.', file[0] == '.' ? 1 : 0);
     if (pos != std::string::npos) {
-        return cm::string_view(file.data() + pos, file.length() - pos);
+        return cmPath(std::string(cm::string_view(file.data() + pos, file.length() - pos)));
     }
 
     return cmPath();
@@ -328,6 +335,13 @@ cmPath& cmPath::operator+=(const cmPath& other)
     p += GetFilesystemPath(other).string();
     this->SetPath(p.generic_string());
     return *this;
+}
+
+cmPath cmPath::Append(const cmPath& other) const
+{
+    cmPath newPath = *this;
+    newPath /= other;
+    return newPath;
 }
 
 bool operator==(const cmPath& lhs, const cmPath& rhs)

@@ -19,6 +19,7 @@ public:
   cmPath(const char* path);
   cmPath(const std::string& path);
   cmPath(std::string&& path);
+  cmPath(cm::string_view path);
 
   bool IsEmpty() const;
   bool IsAbsolute() const;
@@ -75,6 +76,8 @@ public:
 
   cmPath& operator/=(const cmPath& other);
   cmPath& operator+=(const cmPath& other);
+
+  cmPath Append(const cmPath& other) const;
 
 private:
   void InternPath(const std::string& path);

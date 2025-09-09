@@ -38,3 +38,6 @@
 
 # clang-tidy output
 /clang-tidy-fixes.patch
+/Bootstrap.cmk/
+**/CMakeFiles/
+/Tests/RunCMake/
