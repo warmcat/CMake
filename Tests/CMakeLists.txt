@@ -780,6 +780,8 @@ if(BUILD_TESTING)
   if(NOT CMAKE_GENERATOR MATCHES "Xcode|Ninja")
     # run cmake and configure all of SubProject
     # but only build the independent executable car
+    message(STATUS "SubProject Source Dir: ${CMake_SOURCE_DIR}/Tests/SubProject")
+    message(STATUS "SubProject Binary Dir: ${CMake_BINARY_DIR}/Tests/SubProject")
     add_test(SubProject ${CMAKE_CTEST_COMMAND}
       --build-and-test
       "${CMake_SOURCE_DIR}/Tests/SubProject"
