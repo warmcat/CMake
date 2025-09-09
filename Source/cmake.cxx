@@ -36,6 +36,7 @@
 #include "cmCMakePath.h"
 #include "cmCMakePresetsGraph.h"
 #include "cmCommandLineArgument.h"
+#include "cmPathCacheControl.h"
 #include "cmCommands.h"
 #ifdef CMake_ENABLE_DEBUGGER
 #  include "cmDebuggerAdapter.h"
@@ -940,6 +941,10 @@ void cmake::LoadEnvironmentPresets()
     cmSystemTools::GetEnvVar("CMAKE_INTERMEDIATE_DIR_STRATEGY");
   this->AutogenIntermediateDirStrategy =
     cmSystemTools::GetEnvVar("CMAKE_AUTOGEN_INTERMEDIATE_DIR_STRATEGY");
+
+  if (cmSystemTools::HasEnv("CMAKE_EXPERIMENTAL_PATH_CACHING")) {
+    cmPathCacheControl::SetEnabled(true);
+  }
 }
 
 namespace {
@@ -1352,6 +1357,12 @@ void cmake::SetArgs(std::vector<std::string> const& args)
                                             "for --debugger-dap-log");
                        return false;
 #endif
+                     } },
+    CommandArgument{ "--experimental-path-caching",
+                     CommandArgument::Values::Zero,
+                     [](std::string const&, cmake*) -> bool {
+                       cmPathCacheControl::SetEnabled(true);
+                       return true;
                      } },
   };
 
