@@ -31,3 +31,9 @@ const std::string& cmPathCache::GetPath(size_t id) const
   std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(this->Mutex));
   return this->IdToPath[id];
 }
+
+size_t cmPathCache::size() const
+{
+  std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(this->Mutex));
+  return this->IdToPath.size();
+}
