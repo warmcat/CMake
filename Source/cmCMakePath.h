@@ -5,6 +5,9 @@
 
 #include "cmConfigure.h" // IWYU pragma: keep
 
+#include "cmPathCache.h"
+#include "cmPathCacheControl.h"
+
 #include <cstddef>
 #include <string>
 #include <utility>
@@ -109,27 +112,15 @@ public:
   class iterator;
   using const_iterator = iterator;
 
-  cmCMakePath() noexcept = default;
+  cmCMakePath();
 
   cmCMakePath(cmCMakePath const&) = default;
 
-  cmCMakePath(cmCMakePath&& path) noexcept
-    : Path(std::forward<cm::filesystem::path>(path.Path))
-  {
-  }
+  cmCMakePath(cmCMakePath&& path) noexcept;
 
-  cmCMakePath(cm::filesystem::path path) noexcept
-    : Path(std::move(path))
-  {
-  }
-  cmCMakePath(cm::string_view source, format fmt = generic_format) noexcept
-    : Path(FormatPath(source, fmt))
-  {
-  }
-  cmCMakePath(char const* source, format fmt = generic_format) noexcept
-    : Path(FormatPath(cm::string_view{ source }, fmt))
-  {
-  }
+  cmCMakePath(cm::filesystem::path path);
+  cmCMakePath(cm::string_view source, format fmt = generic_format);
+  cmCMakePath(char const* source, format fmt = generic_format);
 #if defined(__SUNPRO_CC) && defined(__sparc)
   // Oracle DeveloperStudio C++ compiler on Solaris/Sparc is confused when
   // standard methods and templates use the same name. The template is selected
@@ -145,8 +136,17 @@ public:
 #else
   template <typename Source, typename = enable_if_move_pathable<Source>>
   cmCMakePath(Source source, format fmt = generic_format)
-    : Path(FormatPath(std::move(source), fmt))
   {
+    this->IsCached = cmPathCacheControl::IsEnabled();
+    if (this->IsCached) {
+      cm::filesystem::path p = FormatPath(std::move(source), fmt);
+      this->DirId =
+        cmPathCache::instance().GetId(p.parent_path().generic_string());
+      this->FileName = p.filename().generic_string();
+    } else {
+      this->Path = FormatPath(std::move(source), fmt);
+      this->IsPathStale = false;
+    }
   }
 #endif
 
@@ -215,13 +215,33 @@ public:
   template <typename Source, typename = enable_if_move_pathable<Source>>
   cmCMakePath& operator=(Source&& source)
   {
-    this->Assign(std::forward<Source>(source));
+    this->IsCached = cmPathCacheControl::IsEnabled();
+    if (this->IsCached) {
+      cm::filesystem::path p(std::forward<Source>(source));
+      this->DirId =
+        cmPathCache::instance().GetId(p.parent_path().generic_string());
+      this->FileName = p.filename().generic_string();
+      this->IsPathStale = true;
+    } else {
+      this->Path = std::forward<Source>(source);
+      this->IsPathStale = false;
+    }
     return *this;
   }
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& operator=(Source const& source)
   {
-    this->Assign(source);
+    this->IsCached = cmPathCacheControl::IsEnabled();
+    if (this->IsCached) {
+      cm::filesystem::path p(source);
+      this->DirId =
+        cmPathCache::instance().GetId(p.parent_path().generic_string());
+      this->FileName = p.filename().generic_string();
+      this->IsPathStale = true;
+    } else {
+      this->Path = source;
+      this->IsPathStale = false;
+    }
     return *this;
   }
 #endif
@@ -265,11 +285,15 @@ public:
 
   cmCMakePath& operator/=(cmCMakePath const& path)
   {
+    this->UpdatePath();
+    this->IsCached = false;
     return this->Append(path);
   }
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& operator/=(Source const& source)
   {
+    this->UpdatePath();
+    this->IsCached = false;
     return this->Append(source);
   }
 
@@ -313,110 +337,66 @@ public:
 
   cmCMakePath& operator+=(cmCMakePath const& path)
   {
+    this->UpdatePath();
+    this->IsCached = false;
     return this->Concat(path);
   }
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& operator+=(Source const& source)
   {
+    this->UpdatePath();
+    this->IsCached = false;
     return this->Concat(source);
   }
 
   // Manipulation
-  void Clear() noexcept { this->Path.clear(); }
+  void Clear() noexcept;
 
-  cmCMakePath& RemoveFileName()
-  {
-    this->Path.remove_filename();
-    return *this;
-  }
+  cmCMakePath& RemoveFileName();
 
-  cmCMakePath& ReplaceFileName(cmCMakePath const& filename)
-  {
-    if (this->Path.has_filename()) {
-      this->Path.replace_filename(filename.Path);
-    }
-    return *this;
-  }
+  cmCMakePath& ReplaceFileName(cmCMakePath const& filename);
 #if defined(__SUNPRO_CC) && defined(__sparc)
   // Oracle DeveloperStudio C++ compiler on Solaris/Sparc is confused when
   // standard methods and templates use the same name. The template is selected
   // rather than the standard one regardless the arguments of the method.
-  cmCMakePath& ReplaceFileName(cm::filesystem::path const& filename)
-  {
-    if (this->Path.has_filename()) {
-      this->Path.replace_filename(filename);
-    }
-    return *this;
-  }
-  cmCMakePath& ReplaceFileName(std::string const& filename)
-  {
-    if (this->Path.has_filename()) {
-      this->Path.replace_filename(filename);
-    }
-    return *this;
-  }
-  cmCMakePath& ReplaceFileName(cm::string_view filename)
-  {
-    if (this->Path.has_filename()) {
-      this->Path.replace_filename(filename);
-    }
-    return *this;
-  }
+  cmCMakePath& ReplaceFileName(cm::filesystem::path const& filename);
+  cmCMakePath& ReplaceFileName(std::string const& filename);
+  cmCMakePath& ReplaceFileName(cm::string_view filename);
 #else
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& ReplaceFileName(Source const& filename)
   {
+    this->UpdatePath();
     if (this->Path.has_filename()) {
       this->Path.replace_filename(filename);
+      this->IsCached = false;
     }
     return *this;
   }
 #endif
 
-  cmCMakePath& ReplaceExtension(cmCMakePath const& extension = cmCMakePath())
-  {
-    this->Path.replace_extension(extension.Path);
-    return *this;
-  }
+  cmCMakePath& ReplaceExtension(cmCMakePath const& extension = cmCMakePath());
 #if defined(__SUNPRO_CC) && defined(__sparc)
   // Oracle DeveloperStudio C++ compiler on Solaris/Sparc is confused when
   // standard methods and templates use the same name. The template is selected
   // rather than the standard one regardless the arguments of the method.
-  cmCMakePath& ReplaceExtension(cm::filesystem::path const& extension)
-  {
-    this->Path.replace_extension(extension);
-    return *this;
-  }
-  cmCMakePath& ReplaceExtension(std::string const& extension)
-  {
-    this->Path.replace_extension(extension);
-    return *this;
-  }
-  cmCMakePath& ReplaceExtension(cm::string_view const extension)
-  {
-    this->Path.replace_extension(extension);
-    return *this;
-  }
+  cmCMakePath& ReplaceExtension(cm::filesystem::path const& extension);
+  cmCMakePath& ReplaceExtension(std::string const& extension);
+  cmCMakePath& ReplaceExtension(cm::string_view const extension);
 #else
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& ReplaceExtension(Source const& extension)
   {
+    this->UpdatePath();
     this->Path.replace_extension(extension);
+    this->IsCached = false;
     return *this;
   }
 #endif
 
   cmCMakePath& ReplaceWideExtension(
-    cmCMakePath const& extension = cmCMakePath())
-  {
-    return this->ReplaceWideExtension(
-      static_cast<cm::string_view>(extension.Path.string()));
-  }
-  cmCMakePath& ReplaceWideExtension(cm::filesystem::path const& extension)
-  {
-    return this->ReplaceWideExtension(
-      static_cast<cm::string_view>(extension.string()));
-  }
+    cmCMakePath const& extension = cmCMakePath());
+  cmCMakePath& ReplaceWideExtension(cm::filesystem::path const& extension);
 #if defined(__SUNPRO_CC) && defined(__sparc)
   // Oracle DeveloperStudio C++ compiler on Solaris/Sparc is confused when
   // standard methods and templates use the same name. The template is selected
@@ -434,85 +414,40 @@ public:
 #endif
   cmCMakePath& ReplaceWideExtension(cm::string_view extension);
 
-  cmCMakePath& RemoveExtension()
-  {
-    if (this->Path.has_extension()) {
-      this->ReplaceExtension(cm::string_view(""));
-    }
-    return *this;
-  }
+  cmCMakePath& RemoveExtension();
 
-  cmCMakePath& RemoveWideExtension()
-  {
-    if (this->Path.has_extension()) {
-      this->ReplaceWideExtension(cm::string_view(""));
-    }
-    return *this;
-  }
+  cmCMakePath& RemoveWideExtension();
 
-  void swap(cmCMakePath& other) noexcept { this->Path.swap(other.Path); }
+  void swap(cmCMakePath& other) noexcept;
 
   // Observers
-  std::string String() const { return this->Path.string(); }
-  std::wstring WString() const { return this->Path.wstring(); }
+  std::string String() const;
+  std::wstring WString() const;
 
-  string_type Native() const
-  {
-    string_type path;
-    this->GetNativePath(path);
-
-    return path;
-  }
-  std::string NativeString() const
-  {
-    std::string path;
-    this->GetNativePath(path);
-
-    return path;
-  }
-  std::wstring NativeWString() const
-  {
-    std::wstring path;
-    this->GetNativePath(path);
-
-    return path;
-  }
-  std::string GenericString() const { return this->Path.generic_string(); }
-  std::wstring GenericWString() const { return this->Path.generic_wstring(); }
+  string_type Native() const;
+  std::string NativeString() const;
+  std::wstring NativeWString() const;
+  std::string GenericString() const;
+  std::wstring GenericWString() const;
 
   // Decomposition
-  cmCMakePath GetRootName() const { return this->Path.root_name(); }
-  cmCMakePath GetRootDirectory() const { return this->Path.root_directory(); }
-  cmCMakePath GetRootPath() const { return this->Path.root_path(); }
-  cmCMakePath GetFileName() const { return this->Path.filename(); }
-  cmCMakePath GetExtension() const { return this->Path.extension(); }
+  cmCMakePath GetRootName() const;
+  cmCMakePath GetRootDirectory() const;
+  cmCMakePath GetRootPath() const;
+  cmCMakePath GetFileName() const;
+  cmCMakePath GetExtension() const;
   cmCMakePath GetWideExtension() const;
-  cmCMakePath GetStem() const { return this->Path.stem(); }
+  cmCMakePath GetStem() const;
   cmCMakePath GetNarrowStem() const;
 
-  cmCMakePath GetRelativePath() const { return this->Path.relative_path(); }
-  cmCMakePath GetParentPath() const { return this->Path.parent_path(); }
+  cmCMakePath GetRelativePath() const;
+  cmCMakePath GetParentPath() const;
 
   // Generation
-  cmCMakePath Normal() const
-  {
-    auto path = this->Path.lexically_normal();
-    // filesystem::path:lexically_normal use preferred_separator ('\') on
-    // Windows) so convert back to '/'
-    return path.generic_string();
-  }
+  cmCMakePath Normal() const;
 
-  cmCMakePath Relative(cmCMakePath const& base) const
-  {
-    return this->Relative(base.Path);
-  }
-  cmCMakePath Relative(cm::filesystem::path const& base) const
-  {
-    auto path = this->Path.lexically_relative(base);
-    // filesystem::path:lexically_relative use preferred_separator ('\') on
-    // Windows) so convert back to '/'
-    return path.generic_string();
-  }
+  cmCMakePath Relative(cmCMakePath const& base) const;
+  cmCMakePath Relative(cm::filesystem::path const& base) const;
 #if defined(__SUNPRO_CC) && defined(__sparc)
   // Oracle DeveloperStudio C++ compiler on Solaris/Sparc is confused when
   // standard methods and templates use the same name. The template is selected
@@ -532,17 +467,8 @@ public:
     return this->Relative(cm::filesystem::path(base));
   }
 #endif
-  cmCMakePath Proximate(cmCMakePath const& base) const
-  {
-    return this->Proximate(base.Path);
-  }
-  cmCMakePath Proximate(cm::filesystem::path const& base) const
-  {
-    auto path = this->Path.lexically_proximate(base);
-    // filesystem::path::lexically_proximate use preferred_separator ('\') on
-    // Windows) so convert back to '/'
-    return path.generic_string();
-  }
+  cmCMakePath Proximate(cmCMakePath const& base) const;
+  cmCMakePath Proximate(cm::filesystem::path const& base) const;
 #if defined(__SUNPRO_CC) && defined(__sparc)
   // Oracle DeveloperStudio C++ compiler on Solaris/Sparc is confused when
   // standard methods and templates use the same name. The template is selected
@@ -563,10 +489,7 @@ public:
   }
 #endif
 
-  cmCMakePath Absolute(cmCMakePath const& base) const
-  {
-    return this->Absolute(base.Path);
-  }
+  cmCMakePath Absolute(cmCMakePath const& base) const;
 #if defined(__SUNPRO_CC) && defined(__sparc)
   // Oracle DeveloperStudio C++ compiler on Solaris/Sparc is confused when
   // standard methods and templates use the same name. The template is selected
@@ -589,25 +512,22 @@ public:
   cmCMakePath Absolute(cm::filesystem::path const& base) const;
 
   // Comparison
-  int Compare(cmCMakePath const& path) const noexcept
-  {
-    return this->Path.compare(path.Path);
-  }
+  int Compare(cmCMakePath const& path) const noexcept;
 
   // Query
-  bool IsEmpty() const noexcept { return this->Path.empty(); }
+  bool IsEmpty() const noexcept;
 
-  bool HasRootPath() const { return this->Path.has_root_path(); }
-  bool HasRootName() const { return this->Path.has_root_name(); }
-  bool HasRootDirectory() const { return this->Path.has_root_directory(); }
-  bool HasRelativePath() const { return this->Path.has_relative_path(); }
-  bool HasParentPath() const { return this->Path.has_parent_path(); }
-  bool HasFileName() const { return this->Path.has_filename(); }
-  bool HasStem() const { return this->Path.has_stem(); }
-  bool HasExtension() const { return this->Path.has_extension(); }
+  bool HasRootPath() const;
+  bool HasRootName() const;
+  bool HasRootDirectory() const;
+  bool HasRelativePath() const;
+  bool HasParentPath() const;
+  bool HasFileName() const;
+  bool HasStem() const;
+  bool HasExtension() const;
 
-  bool IsAbsolute() const { return this->Path.is_absolute(); }
-  bool IsRelative() const { return this->Path.is_relative(); }
+  bool IsAbsolute() const;
+  bool IsRelative() const;
   bool IsPrefix(cmCMakePath const& path) const;
 
   // Iterators
@@ -649,7 +569,13 @@ private:
   void GetNativePath(std::string& path) const;
   void GetNativePath(std::wstring& path) const;
 
-  cm::filesystem::path Path;
+  void UpdatePath() const;
+
+  mutable cm::filesystem::path Path;
+  size_t DirId = static_cast<size_t>(-1);
+  std::string FileName;
+  bool IsCached = false;
+  mutable bool IsPathStale = true;
 };
 
 class cmCMakePath::iterator
@@ -736,10 +662,12 @@ private:
 
 inline cmCMakePath::iterator cmCMakePath::begin() const
 {
+  this->UpdatePath();
   return iterator(this, this->Path.begin());
 }
 inline cmCMakePath::iterator cmCMakePath::end() const
 {
+  this->UpdatePath();
   return iterator(this, this->Path.end());
 }
 
@@ -764,5 +692,6 @@ inline void swap(cmCMakePath& lhs, cmCMakePath& rhs) noexcept
 
 inline std::size_t hash_value(cmCMakePath const& path) noexcept
 {
+  path.UpdatePath();
   return cm::filesystem::hash_value(path.Path);
 }
