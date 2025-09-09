@@ -63,9 +63,38 @@ bool testPathCaching()
   return true;
 }
 
+bool testSubProject()
+{
+  std::cout << "testSubProject()" << std::endl;
+
+  cmPathCacheControl::SetEnabled(true);
+
+  cmCMakePath buildDir("/home/agreen/projects/cmake/build/Tests/SubProject");
+  std::cout << "  buildDir: " << buildDir.String() << std::endl;
+
+  cmCMakePath subDir = "foo";
+  std::cout << "  subDir: " << subDir.String() << std::endl;
+
+  buildDir /= subDir;
+  std::cout << "  buildDir after append: " << buildDir.String() << std::endl;
+
+  std::string expected =
+    "/home/agreen/projects/cmake/build/Tests/SubProject/foo";
+  if (buildDir.String() != expected) {
+    std::cout << "  => failed: expected " << expected << ", got "
+              << buildDir.String() << std::endl;
+    return false;
+  }
+
+  cmPathCacheControl::SetEnabled(false);
+
+  std::cout << " => passed" << std::endl;
+  return true;
+}
+
 } // namespace
 
 int testCMakePathCache(int /*unused*/, char* /*unused*/[])
 {
-  return runTests({ testPathCaching }, false);
+  return runTests({ testPathCaching, testSubProject }, false);
 }
