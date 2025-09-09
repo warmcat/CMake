@@ -122,10 +122,39 @@ bool testSubProjectFile()
   return true;
 }
 
+bool testOutDir()
+{
+  std::cout << "testOutDir()" << std::endl;
+
+  cmPathCacheControl::SetEnabled(true);
+
+  cmCMakePath top("/home/agreen/projects/cmake/build");
+  cmCMakePath testc1_lib = top;
+  testc1_lib /= "archive/Release/libtestc1.a";
+
+  std::cout << "  top: " << top.String() << std::endl;
+  std::cout << "  testc1_lib: " << testc1_lib.String() << std::endl;
+
+  cmCMakePath relative = testc1_lib.Relative(top);
+  std::cout << "  relative: " << relative.String() << std::endl;
+
+  std::string expected = "archive/Release/libtestc1.a";
+  if (relative.String() != expected) {
+    std::cout << "  => failed: expected " << expected << ", got "
+              << relative.String() << std::endl;
+    return false;
+  }
+
+  cmPathCacheControl::SetEnabled(false);
+
+  std::cout << " => passed" << std::endl;
+  return true;
+}
+
 } // namespace
 
 int testCMakePathCache(int /*unused*/, char* /*unused*/[])
 {
-  return runTests({ testPathCaching, testSubProject, testSubProjectFile },
-                  false);
+  return runTests(
+    { testPathCaching, testSubProject, testSubProjectFile, testOutDir }, false);
 }
