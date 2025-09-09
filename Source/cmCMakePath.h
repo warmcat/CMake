@@ -215,15 +215,33 @@ public:
   template <typename Source, typename = enable_if_move_pathable<Source>>
   cmCMakePath& operator=(Source&& source)
   {
-    this->Assign(std::forward<Source>(source));
-    this->IsCached = false;
+    this->IsCached = cmPathCacheControl::IsEnabled();
+    if (this->IsCached) {
+      cm::filesystem::path p(std::forward<Source>(source));
+      this->DirId =
+        cmPathCache::instance().GetId(p.parent_path().generic_string());
+      this->FileName = p.filename().generic_string();
+      this->IsPathStale = true;
+    } else {
+      this->Path = std::forward<Source>(source);
+      this->IsPathStale = false;
+    }
     return *this;
   }
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& operator=(Source const& source)
   {
-    this->Assign(source);
-    this->IsCached = false;
+    this->IsCached = cmPathCacheControl::IsEnabled();
+    if (this->IsCached) {
+      cm::filesystem::path p(source);
+      this->DirId =
+        cmPathCache::instance().GetId(p.parent_path().generic_string());
+      this->FileName = p.filename().generic_string();
+      this->IsPathStale = true;
+    } else {
+      this->Path = source;
+      this->IsPathStale = false;
+    }
     return *this;
   }
 #endif
