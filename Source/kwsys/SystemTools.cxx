@@ -3219,6 +3219,7 @@ Status SystemTools::ReadSymlink(std::string const& newName,
 
 Status SystemTools::ChangeDirectory(std::string const& dir)
 {
+  std::cerr << "cmsys::SystemTools::ChangeDirectory received dir: \"" << dir << "\"" << std::endl;
   if (Chdir(dir) < 0) {
     return Status::POSIX_errno();
   }
