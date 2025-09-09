@@ -25,8 +25,7 @@ void checkResult(bool success)
 
 bool testPathCaching()
 {
-  std::cout << "testPathCaching()";
-  bool result = true;
+  std::cout << "testPathCaching()" << std::endl;
 
   cmPathCacheControl::SetEnabled(true);
 
@@ -37,34 +36,39 @@ bool testPathCaching()
   }
 
   if (cmPathCache::instance().size() != 1) {
-    result = false;
+    std::cout << "  => failed: cache size is "
+              << cmPathCache::instance().size() << ", expected 1" << std::endl;
+    return false;
   }
 
   for (int i = 0; i < 100; ++i) {
-    std::string expected =
-      long_dir + "/file" + std::to_string(i) + ".txt";
+    std::string expected = long_dir + "/file" + std::to_string(i) + ".txt";
     if (paths[i].String() != expected) {
-      result = false;
-      break;
+      std::cout << "  => failed: path[" << i << "] is " << paths[i].String()
+                << ", expected " << expected << std::endl;
+      return false;
     }
   }
 
   if (paths[10] != paths[10]) {
-    result = false;
+    std::cout << "  => failed: paths[10] != paths[10]" << std::endl;
+    return false;
   }
   if (paths[10] == paths[11]) {
-    result = false;
+    std::cout << "  => failed: paths[10] == paths[11]" << std::endl;
+    return false;
   }
 
   cmCMakePath p1 = long_dir + "/file10.txt";
   if (paths[10] != p1) {
-    result = false;
+    std::cout << "  => failed: paths[10] != p1" << std::endl;
+    return false;
   }
 
   cmPathCacheControl::SetEnabled(false);
 
-  checkResult(result);
-  return result;
+  std::cout << " => passed" << std::endl;
+  return true;
 }
 
 } // namespace
