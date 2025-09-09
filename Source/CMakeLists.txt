@@ -124,6 +124,10 @@ add_library(
   cmCLocaleEnvironmentScope.cxx
   cmCMakePath.h
   cmCMakePath.cxx
+  cmPathCache.cxx
+  cmPathCache.h
+  cmPathCacheControl.cxx
+  cmPathCacheControl.h
   cmCMakePresetsErrors.cxx
   cmCMakePresetsErrors.h
   cmCMakePresetsGraph.cxx

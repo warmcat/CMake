@@ -81,6 +81,23 @@ void cmCMakePath::UpdatePath() const
   }
 }
 
+cmCMakePath& cmCMakePath::ReplaceWideExtension(
+  cmCMakePath const& extension)
+{
+  this->UpdatePath();
+  return this->ReplaceWideExtension(
+    static_cast<cm::string_view>(extension.Path.string()));
+}
+
+cmCMakePath& cmCMakePath::ReplaceWideExtension(
+  cm::filesystem::path const& extension)
+{
+  this->UpdatePath();
+  return this->ReplaceWideExtension(
+    static_cast<cm::string_view>(extension.string()));
+}
+
+
 cmCMakePath& cmCMakePath::ReplaceWideExtension(cm::string_view extension)
 {
   this->UpdatePath();
@@ -218,6 +235,114 @@ void cmCMakePath::GetNativePath(std::wstring& path) const
     }
   }
 #endif
+}
+
+void cmCMakePath::Clear() noexcept
+{
+  this->Path.clear();
+  this->IsCached = false;
+}
+
+cmCMakePath& cmCMakePath::RemoveFileName()
+{
+  this->UpdatePath();
+  this->Path.remove_filename();
+  this->IsCached = false;
+  return *this;
+}
+
+cmCMakePath& cmCMakePath::ReplaceFileName(cmCMakePath const& filename)
+{
+  this->UpdatePath();
+  if (this->Path.has_filename()) {
+    this->Path.replace_filename(filename.Path);
+    this->IsCached = false;
+  }
+  return *this;
+}
+
+#if defined(__SUNPRO_CC) && defined(__sparc)
+cmCMakePath& cmCMakePath::ReplaceFileName(cm::filesystem::path const& filename)
+{
+  this->UpdatePath();
+  if (this->Path.has_filename()) {
+    this->Path.replace_filename(filename);
+    this->IsCached = false;
+  }
+  return *this;
+}
+
+cmCMakePath& cmCMakePath::ReplaceFileName(std::string const& filename)
+{
+  this->UpdatePath();
+  if (this->Path.has_filename()) {
+    this->Path.replace_filename(filename);
+    this->IsCached = false;
+  }
+  return *this;
+}
+
+cmCMakePath& cmCMakePath::ReplaceFileName(cm::string_view filename)
+{
+  this->UpdatePath();
+  if (this->Path.has_filename()) {
+    this->Path.replace_filename(filename);
+    this->IsCached = false;
+  }
+  return *this;
+}
+#endif
+
+cmCMakePath& cmCMakePath::ReplaceExtension(cmCMakePath const& extension)
+{
+  this->UpdatePath();
+  this->Path.replace_extension(extension.Path);
+  this->IsCached = false;
+  return *this;
+}
+
+#if defined(__SUNPRO_CC) && defined(__sparc)
+cmCMakePath& cmCMakePath::ReplaceExtension(cm::filesystem::path const& extension)
+{
+  this->UpdatePath();
+  this->Path.replace_extension(extension);
+  this->IsCached = false;
+  return *this;
+}
+
+cmCMakePath& cmCMakePath::ReplaceExtension(std::string const& extension)
+{
+  this->UpdatePath();
+  this->Path.replace_extension(extension);
+  this->IsCached = false;
+  return *this;
+}
+
+cmCMakePath& cmCMakePath::ReplaceExtension(cm::string_view const extension)
+{
+  this->UpdatePath();
+  this->Path.replace_extension(extension);
+  this->IsCached = false;
+  return *this;
+}
+#endif
+
+cmCMakePath& cmCMakePath::RemoveExtension()
+{
+  this->UpdatePath();
+  if (this->Path.has_extension()) {
+    this->ReplaceExtension(cm::string_view(""));
+  }
+  return *this;
+}
+
+cmCMakePath& cmCMakePath::RemoveWideExtension()
+{
+  this->UpdatePath();
+  if (this->Path.has_extension()) {
+    this->ReplaceWideExtension(cm::string_view(""));
+  }
+  return *this;
 }
 
 int cmCMakePath::Compare(cmCMakePath const& path) const noexcept

@@ -28,8 +28,6 @@ size_t cmPathCache::GetId(const std::string& path)
 
 const std::string& cmPathCache::GetPath(size_t id) const
 {
-  // This read-only access is assumed to be safe without a lock because
-  // the vector is only ever appended to, and we are accessing an existing
-  // element. This is a performance optimization.
+  std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(this->Mutex));
   return this->IdToPath[id];
 }

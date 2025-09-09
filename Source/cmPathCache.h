@@ -19,6 +19,7 @@ public:
 
   size_t GetId(const std::string& path);
   const std::string& GetPath(size_t id) const;
+  size_t size() const;
 
 private:
   cmPathCache() = default;

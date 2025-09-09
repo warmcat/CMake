@@ -45,6 +45,8 @@ set(CMakeLib_TESTS
   testList.cxx
   testCMakePath.cxx
   testCMakePathCache.cxx
+  ${CMAKE_SOURCE_DIR}/Source/cmPathCache.cxx
+  ${CMAKE_SOURCE_DIR}/Source/cmPathCacheControl.cxx
   )
 if(CMake_ENABLE_DEBUGGER)
   list(APPEND CMakeLib_TESTS
