@@ -10,6 +10,7 @@
 #include "cmCMakePath.h"
 #include "cmPathCache.h"
 #include "cmPathCacheControl.h"
+#include "cmSystemTools.h"
 
 #include "testCommon.h"
 
