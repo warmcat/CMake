@@ -15,14 +15,6 @@
 
 namespace {
 
-void checkResult(bool success)
-{
-  if (!success) {
-    std::cout << " => failed";
-  }
-  std::cout << std::endl;
-}
-
 bool testPathCaching()
 {
   std::cout << "testPathCaching()" << std::endl;

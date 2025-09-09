@@ -136,8 +136,17 @@ public:
 #else
   template <typename Source, typename = enable_if_move_pathable<Source>>
   cmCMakePath(Source source, format fmt = generic_format)
-    : Path(FormatPath(std::move(source), fmt))
   {
+    this->IsCached = cmPathCacheControl::IsEnabled();
+    if (this->IsCached) {
+      cm::filesystem::path p = FormatPath(std::move(source), fmt);
+      this->DirId =
+        cmPathCache::instance().GetId(p.parent_path().generic_string());
+      this->FileName = p.filename().generic_string();
+    } else {
+      this->Path = FormatPath(std::move(source), fmt);
+      this->IsPathStale = false;
+    }
   }
 #endif
 
