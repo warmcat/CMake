@@ -248,7 +248,7 @@ cmPath cmPath::GetWideExtension() const
 
     auto pos = file.find('.', file[0] == '.' ? 1 : 0);
     if (pos != std::string::npos) {
-        return cmPath(std::string(cm::string_view(file.data() + pos, file.length() - pos)));
+        return cmPath(file.substr(pos));
     }
 
     return cmPath();
