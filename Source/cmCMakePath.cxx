@@ -24,7 +24,10 @@
 cmCMakePath::cmCMakePath()
 {
   this->IsCached = cmPathCacheControl::IsEnabled();
-  if (!this->IsCached) {
+  if (this->IsCached) {
+    this->DirId = cmPathCache::instance().GetId("");
+    this->FileName = "";
+  } else {
     this->IsPathStale = false;
   }
 }
