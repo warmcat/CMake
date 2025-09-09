@@ -159,7 +159,7 @@ bool testCurrentWorkingDirectory()
   cmPathCacheControl::SetEnabled(true);
 
   std::string path = "/home/agreen/projects/cmake/build/Tests/OutDir";
-  cmSystemTools::SetCurrentWorkingDirectory(path);
+  cmSystemTools::ChangeDirectory(path);
 
   std::string cwd = cmSystemTools::GetLogicalWorkingDirectory();
   std::cout << "  cwd: " << cwd << std::endl;
