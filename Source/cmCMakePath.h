@@ -116,7 +116,7 @@ public:
 
   cmCMakePath(cmCMakePath const&) = default;
 
-  cmCMakePath(cmCMakePath&& path);
+  cmCMakePath(cmCMakePath&& path) noexcept;
 
   cmCMakePath(cm::filesystem::path path);
   cmCMakePath(cm::string_view source, format fmt = generic_format);

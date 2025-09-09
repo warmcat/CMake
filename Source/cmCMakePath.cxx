@@ -32,7 +32,7 @@ cmCMakePath::cmCMakePath()
   }
 }
 
-cmCMakePath::cmCMakePath(cmCMakePath&& path)
+cmCMakePath::cmCMakePath(cmCMakePath&& path) noexcept
   : Path(std::move(path.Path))
   , DirId(path.DirId)
   , FileName(std::move(path.FileName))
