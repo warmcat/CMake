@@ -151,10 +151,35 @@ bool testOutDir()
   return true;
 }
 
+bool testCurrentWorkingDirectory()
+{
+  std::cout << "testCurrentWorkingDirectory()" << std::endl;
+
+  cmPathCacheControl::SetEnabled(true);
+
+  std::string path = "/home/agreen/projects/cmake/build/Tests/OutDir";
+  cmSystemTools::SetCurrentWorkingDirectory(path);
+
+  std::string cwd = cmSystemTools::GetLogicalWorkingDirectory();
+  std::cout << "  cwd: " << cwd << std::endl;
+
+  if (cwd != path) {
+    std::cout << "  => failed: expected " << path << ", got " << cwd
+              << std::endl;
+    return false;
+  }
+
+  cmPathCacheControl::SetEnabled(false);
+
+  std::cout << " => passed" << std::endl;
+  return true;
+}
+
 } // namespace
 
 int testCMakePathCache(int /*unused*/, char* /*unused*/[])
 {
-  return runTests(
-    { testPathCaching, testSubProject, testSubProjectFile, testOutDir }, false);
+  return runTests({ testPathCaching, testSubProject, testSubProjectFile,
+                    testOutDir, testCurrentWorkingDirectory },
+                  false);
 }
