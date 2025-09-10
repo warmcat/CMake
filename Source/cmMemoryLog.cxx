@@ -3,6 +3,7 @@
 
 #include "cmMemoryLog.h"
 #include "cmSystemTools.h"
+#include "cmsys/FStream.hxx"
 #include <iostream>
 #include <string>
 
