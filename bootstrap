@@ -448,6 +448,8 @@ CMAKE_CXX_SOURCES="\
   cmMacroCommand \
   cmMakeDirectoryCommand \
   cmMakefile \
+  cmMemoryLog \
+  cmMemoryOverride \
   cmMarkAsAdvancedCommand \
   cmMathCommand \
   cmMessageCommand \
@@ -744,6 +746,8 @@ Configuration:
   --no-qt-gui             do not build the Qt-based GUI (default)
   --qt-qmake=<qmake>      use <qmake> as the qmake executable to find Qt
 
+  --debug-memory          build with memory debugging support
+
   --debugger              enable debugger support (default if supported)
   --no-debugger           disable debugger support
 
@@ -1010,6 +1014,7 @@ while test $# != 0; do
   --qt-gui) cmake_bootstrap_qt_gui="1" ;;
   --no-qt-gui) cmake_bootstrap_qt_gui="0" ;;
   --qt-qmake=*) cmake_bootstrap_qt_qmake=`cmake_arg "$1"` ;;
+  --debug-memory) cmake_bootstrap_debug_memory="1" ;;
   --debugger) cmake_bootstrap_debugger="1" ;;
   --no-debugger) cmake_bootstrap_debugger="0" ;;
   --sphinx-info) cmake_sphinx_info="1" ;;
@@ -2022,6 +2027,11 @@ fi
 if test "x${cmake_bootstrap_qt_qmake}" != "x"; then
   echo '
 set (QT_QMAKE_EXECUTABLE "'"${cmake_bootstrap_qt_qmake}"'" CACHE FILEPATH "Location of Qt qmake" FORCE)
+' >> "${cmake_bootstrap_dir}/InitialCacheFlags.cmake"
+fi
+if test "x${cmake_bootstrap_debug_memory}" != "x"; then
+  echo '
+set (CMAKE_DEBUG_MEMORY '"${cmake_bootstrap_debug_memory}"' CACHE BOOL "Enable memory debugging support" FORCE)
 ' >> "${cmake_bootstrap_dir}/InitialCacheFlags.cmake"
 fi
 if test "x${cmake_bootstrap_debugger}" != "x"; then

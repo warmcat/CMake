@@ -285,46 +285,26 @@ public:
 
   cmCMakePath& operator/=(cmCMakePath const& path)
   {
-    if (this->IsCached) {
-      this->UpdatePath();
-      this->Path /= path.Path;
-      this->Path = this->Path.generic_string();
-      this->DirId =
-        cmPathCache::instance().GetId(this->Path.parent_path().generic_string());
-      this->FileName = this->Path.filename().generic_string();
-    } else {
-      this->Append(path);
-    }
-    return *this;
+    this->UpdatePath();
+    this->IsCached = false;
+    return this->Append(path);
   }
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& operator/=(Source const& source)
   {
-    if (this->IsCached) {
-      this->UpdatePath();
-      this->Path /= source;
-      this->Path = this->Path.generic_string();
-      this->DirId =
-        cmPathCache::instance().GetId(this->Path.parent_path().generic_string());
-      this->FileName = this->Path.filename().generic_string();
-    } else {
-      this->Append(source);
-    }
-    return *this;
+    this->UpdatePath();
+    this->IsCached = false;
+    return this->Append(source);
   }
 
   cmCMakePath& Concat(cmCMakePath const& path)
   {
-    this->UpdatePath();
     this->Path += path.Path;
-    this->IsCached = false;
     return *this;
   }
   cmCMakePath& Concat(cm::string_view source)
   {
-    this->UpdatePath();
     this->Path.operator+=(std::string(source));
-    this->IsCached = false;
     return *this;
   }
 #if defined(__SUNPRO_CC) && defined(__sparc)
@@ -333,43 +313,39 @@ public:
   // rather than the standard one regardless the arguments of the method.
   cmCMakePath& Concat(cm::filesystem::path const& source)
   {
-    this->UpdatePath();
     this->Path.operator+=(source);
-    this->IsCached = false;
     return *this;
   }
   cmCMakePath& Concat(std::string const& source)
   {
-    this->UpdatePath();
     this->Path.operator+=(source);
-    this->IsCached = false;
     return *this;
   }
   cmCMakePath& Concat(char const* source)
   {
-    this->UpdatePath();
     this->Path.operator+=(source);
-    this->IsCached = false;
     return *this;
   }
 #else
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& Concat(Source const& source)
   {
-    this->UpdatePath();
     this->Path.operator+=(source);
-    this->IsCached = false;
     return *this;
   }
 #endif
 
   cmCMakePath& operator+=(cmCMakePath const& path)
   {
+    this->UpdatePath();
+    this->IsCached = false;
     return this->Concat(path);
   }
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& operator+=(Source const& source)
   {
+    this->UpdatePath();
+    this->IsCached = false;
     return this->Concat(source);
   }
 
@@ -390,10 +366,10 @@ public:
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& ReplaceFileName(Source const& filename)
   {
-    if (this->IsCached) {
-      this->FileName = cm::filesystem::path(filename).string();
-    } else if (this->Path.has_filename()) {
+    this->UpdatePath();
+    if (this->Path.has_filename()) {
       this->Path.replace_filename(filename);
+      this->IsCached = false;
     }
     return *this;
   }
@@ -411,13 +387,9 @@ public:
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& ReplaceExtension(Source const& extension)
   {
-    if (this->IsCached) {
-      cm::filesystem::path p(this->FileName);
-      p.replace_extension(extension);
-      this->FileName = p.string();
-    } else {
-      this->Path.replace_extension(extension);
-    }
+    this->UpdatePath();
+    this->Path.replace_extension(extension);
+    this->IsCached = false;
     return *this;
   }
 #endif
@@ -437,26 +409,7 @@ public:
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& ReplaceWideExtension(Source const& extension)
   {
-    if (this->IsCached) {
-      auto file = this->FileName;
-      if (!file.empty() && file != "." && file != "..") {
-        auto pos = file.find('.', file[0] == '.' ? 1 : 0);
-        if (pos != std::string::npos) {
-          file.erase(pos);
-        }
-      }
-      std::string extension_str(extension);
-      if (!extension_str.empty()) {
-        if (extension_str[0] != '.') {
-          file += '.';
-        }
-        file.append(extension_str);
-      }
-      this->FileName = file;
-    } else {
-      this->ReplaceWideExtension(cm::string_view(extension));
-    }
-    return *this;
+    return this->ReplaceWideExtension(extension);
   }
 #endif
   cmCMakePath& ReplaceWideExtension(cm::string_view extension);

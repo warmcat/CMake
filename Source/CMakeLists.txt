@@ -59,6 +59,8 @@ add_library(ManifestLib INTERFACE)
 #
 # create a library used by the command line and the GUI
 #
+option(CMAKE_DEBUG_MEMORY "Enable memory debugging and logging" OFF)
+
 add_library(
   CMakeLib
   # Lexers/Parsers
@@ -395,6 +397,8 @@ add_library(
   cmLocale.h
   cmMakefile.cxx
   cmMakefile.h
+  cmMemoryLog.cxx
+  cmMemoryLog.h
   cmMakefileTargetGenerator.cxx
   cmMakefileExecutableTargetGenerator.cxx
   cmMakefileLibraryTargetGenerator.cxx
@@ -1282,6 +1286,11 @@ if(WIN32 OR (CYGWIN AND TARGET LibUUID::LibUUID))
       CPack/WiX/cmWIXSourceWriter.h
     )
   target_link_libraries(CPackLib PUBLIC $<TARGET_NAME_IF_EXISTS:LibUUID::LibUUID>)
+endif()
+
+if(CMAKE_DEBUG_MEMORY)
+  target_sources(CMakeLib PRIVATE cmMemoryOverride.cxx)
+  target_compile_definitions(CMakeLib PRIVATE CMAKE_DEBUG_MEMORY)
 endif()
 
 if(APPLE)
