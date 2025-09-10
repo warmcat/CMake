@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include <mutex>
-#include <map>
 
 class cmMemoryLog
 {
@@ -19,7 +18,7 @@ public:
   void WriteLog();
 
 public:
-  cmMemoryLog() = default;
+  cmMemoryLog();
   ~cmMemoryLog() = default;
 private:
   cmMemoryLog(const cmMemoryLog&) = delete;
@@ -33,7 +32,9 @@ private:
   long long TotalMemoryAllocated = 0;
   long long TotalMemoryDeallocated = 0;
 
-  std::map<size_t, long long> AllocationHistogram;
+  static const size_t HISTOGRAM_MAX_SIZE = 4096;
+  long long AllocationHistogram[HISTOGRAM_MAX_SIZE];
+  long long LargeAllocations;
 
   std::mutex Mutex;
 };

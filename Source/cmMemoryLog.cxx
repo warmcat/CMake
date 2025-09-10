@@ -8,12 +8,19 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <cstring> // For memset
 
 static cmMemoryLog g_MemoryLogInstance;
 
 cmMemoryLog& cmMemoryLog::GetInstance()
 {
   return g_MemoryLogInstance;
+}
+
+cmMemoryLog::cmMemoryLog()
+{
+  memset(this->AllocationHistogram, 0, sizeof(this->AllocationHistogram));
+  this->LargeAllocations = 0;
 }
 
 void cmMemoryLog::Enable(const std::string& logPath)
@@ -36,7 +43,11 @@ void cmMemoryLog::LogAllocation(size_t size)
   std::lock_guard<std::mutex> lock(this->Mutex);
   this->TotalAllocations++;
   this->TotalMemoryAllocated += size;
-  this->AllocationHistogram[size]++;
+  if (size < HISTOGRAM_MAX_SIZE) {
+    this->AllocationHistogram[size]++;
+  } else {
+    this->LargeAllocations++;
+  }
 }
 
 void cmMemoryLog::LogDeallocation(size_t size)
@@ -85,13 +96,15 @@ void cmMemoryLog::WriteLog()
   logFile << "Net Memory (outstanding): " << netMemory << " bytes" << std::endl;
   logFile << std::endl;
 
-  logFile << "--- Top 20 Allocation Sizes ---" << std::endl;
+  logFile << "--- Top 20 Allocation Sizes (under " << HISTOGRAM_MAX_SIZE << " bytes) ---" << std::endl;
   logFile << "Size (bytes) | Count" << std::endl;
   logFile << "-------------------------------" << std::endl;
 
   std::vector<std::pair<size_t, long long>> sorted_histogram;
-  for (auto const& [size, count] : this->AllocationHistogram) {
-    sorted_histogram.push_back({size, count});
+  for (size_t i = 0; i < HISTOGRAM_MAX_SIZE; ++i) {
+    if (this->AllocationHistogram[i] > 0) {
+      sorted_histogram.push_back({i, this->AllocationHistogram[i]});
+    }
   }
   std::sort(sorted_histogram.begin(), sorted_histogram.end(),
             [](const auto& a, const auto& b) {
@@ -106,6 +119,9 @@ void cmMemoryLog::WriteLog()
     logFile << size << " | " << num << std::endl;
     count++;
   }
+
+  logFile << std::endl;
+  logFile << "Allocations >= " << HISTOGRAM_MAX_SIZE << " bytes: " << this->LargeAllocations << std::endl;
 
   logFile << "--- End CMake Memory Log ---" << std::endl;
 }
