@@ -106,7 +106,7 @@ public:
                               cmGeneratorExpressionDAGChecker*,
                               std::string const&) const override
   {
-    return this->PropertyValue.GetString();
+    return this->PropertyValue.String();
   }
 
   cmListFileBacktrace GetBacktrace() const override
@@ -116,7 +116,7 @@ public:
 
   std::string const& GetInput() const override
   {
-    return this->PropertyValue.GetString();
+    return this->PropertyValue.String();
   }
 
 private:
