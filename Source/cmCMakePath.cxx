@@ -242,24 +242,31 @@ void cmCMakePath::GetNativePath(std::wstring& path) const
 
 void cmCMakePath::Clear() noexcept
 {
-  this->Path.clear();
-  this->IsCached = false;
+  if (this->IsCached) {
+    this->FileName.clear();
+    this->DirId = cmPathCache::instance().GetId("");
+  } else {
+    this->Path.clear();
+  }
 }
 
 cmCMakePath& cmCMakePath::RemoveFileName()
 {
-  this->UpdatePath();
-  this->Path.remove_filename();
-  this->IsCached = false;
+  if (this->IsCached) {
+    this->FileName.clear();
+  } else {
+    this->Path.remove_filename();
+  }
   return *this;
 }
 
 cmCMakePath& cmCMakePath::ReplaceFileName(cmCMakePath const& filename)
 {
-  this->UpdatePath();
-  if (this->Path.has_filename()) {
+  if (this->IsCached) {
+    filename.UpdatePath();
+    this->FileName = filename.Path.string();
+  } else if (this->Path.has_filename()) {
     this->Path.replace_filename(filename.Path);
-    this->IsCached = false;
   }
   return *this;
 }
@@ -267,30 +274,30 @@ cmCMakePath& cmCMakePath::ReplaceFileName(cmCMakePath const& filename)
 #if defined(__SUNPRO_CC) && defined(__sparc)
 cmCMakePath& cmCMakePath::ReplaceFileName(cm::filesystem::path const& filename)
 {
-  this->UpdatePath();
-  if (this->Path.has_filename()) {
+  if (this->IsCached) {
+    this->FileName = filename.string();
+  } else if (this->Path.has_filename()) {
     this->Path.replace_filename(filename);
-    this->IsCached = false;
   }
   return *this;
 }
 
 cmCMakePath& cmCMakePath::ReplaceFileName(std::string const& filename)
 {
-  this->UpdatePath();
-  if (this->Path.has_filename()) {
+  if (this->IsCached) {
+    this->FileName = filename;
+  } else if (this->Path.has_filename()) {
     this->Path.replace_filename(filename);
-    this->IsCached = false;
   }
   return *this;
 }
 
 cmCMakePath& cmCMakePath::ReplaceFileName(cm::string_view filename)
 {
-  this->UpdatePath();
-  if (this->Path.has_filename()) {
+  if (this->IsCached) {
+    this->FileName = std::string(filename);
+  } else if (this->Path.has_filename()) {
     this->Path.replace_filename(filename);
-    this->IsCached = false;
   }
   return *this;
 }
@@ -298,42 +305,64 @@ cmCMakePath& cmCMakePath::ReplaceFileName(cm::string_view filename)
 
 cmCMakePath& cmCMakePath::ReplaceExtension(cmCMakePath const& extension)
 {
-  this->UpdatePath();
-  this->Path.replace_extension(extension.Path);
-  this->IsCached = false;
+  if (this->IsCached) {
+    cm::filesystem::path p(this->FileName);
+    p.replace_extension(extension.Path);
+    this->FileName = p.string();
+  } else {
+    this->Path.replace_extension(extension.Path);
+  }
   return *this;
 }
 
 #if defined(__SUNPRO_CC) && defined(__sparc)
-cmCMakePath& cmCMakePath::ReplaceExtension(cm::filesystem::path const& extension)
+cmCMakePath& cmCMakePath::ReplaceExtension(
+  cm::filesystem::path const& extension)
 {
-  this->UpdatePath();
-  this->Path.replace_extension(extension);
-  this->IsCached = false;
+  if (this->IsCached) {
+    cm::filesystem::path p(this->FileName);
+    p.replace_extension(extension);
+    this->FileName = p.string();
+  } else {
+    this->Path.replace_extension(extension);
+  }
   return *this;
 }
 
 cmCMakePath& cmCMakePath::ReplaceExtension(std::string const& extension)
 {
-  this->UpdatePath();
-  this->Path.replace_extension(extension);
-  this->IsCached = false;
+  if (this->IsCached) {
+    cm::filesystem::path p(this->FileName);
+    p.replace_extension(extension);
+    this->FileName = p.string();
+  } else {
+    this->Path.replace_extension(extension);
+  }
   return *this;
 }
 
 cmCMakePath& cmCMakePath::ReplaceExtension(cm::string_view const extension)
 {
-  this->UpdatePath();
-  this->Path.replace_extension(extension);
-  this->IsCached = false;
+  if (this->IsCached) {
+    cm::filesystem::path p(this->FileName);
+    p.replace_extension(extension);
+    this->FileName = p.string();
+  } else {
+    this->Path.replace_extension(extension);
+  }
   return *this;
 }
 #endif
 
 cmCMakePath& cmCMakePath::RemoveExtension()
 {
-  this->UpdatePath();
-  if (this->Path.has_extension()) {
+  if (this->IsCached) {
+    cm::filesystem::path p(this->FileName);
+    if (p.has_extension()) {
+      p.replace_extension("");
+      this->FileName = p.string();
+    }
+  } else if (this->Path.has_extension()) {
     this->ReplaceExtension(cm::string_view(""));
   }
   return *this;
@@ -341,8 +370,9 @@ cmCMakePath& cmCMakePath::RemoveExtension()
 
 cmCMakePath& cmCMakePath::RemoveWideExtension()
 {
-  this->UpdatePath();
-  if (this->Path.has_extension()) {
+  if (this->IsCached) {
+    this->ReplaceWideExtension(cm::string_view(""));
+  } else if (this->Path.has_extension()) {
     this->ReplaceWideExtension(cm::string_view(""));
   }
   return *this;
