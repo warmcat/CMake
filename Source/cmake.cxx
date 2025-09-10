@@ -3062,6 +3062,13 @@ int cmake::Run(std::vector<std::string> const& args, bool noconfigure)
   std::string message = cmStrCat("Build files have been written to: ",
                                  this->GetHomeOutputDirectory());
   this->UpdateProgress(message, -1);
+
+#ifdef CMAKE_DEBUG_MEMORY
+  if (!this->GetIsInTryCompile()) {
+    cmMemoryLog::GetInstance().WriteLog();
+  }
+#endif
+
   return ret;
 }
 
