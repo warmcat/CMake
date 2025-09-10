@@ -448,8 +448,6 @@ CMAKE_CXX_SOURCES="\
   cmMacroCommand \
   cmMakeDirectoryCommand \
   cmMakefile \
-  cmMemoryLog \
-  cmMemoryOverride \
   cmMarkAsAdvancedCommand \
   cmMathCommand \
   cmMessageCommand \
