@@ -364,7 +364,9 @@ cmake::cmake(Role role, cmState::Mode mode, cmState::ProjectKind projectKind)
 cmake::~cmake()
 {
 #ifdef CMAKE_DEBUG_MEMORY
-  cmMemoryLog::GetInstance().WriteLog();
+  if (!this->GetIsInTryCompile()) {
+    cmMemoryLog::GetInstance().WriteLog();
+  }
 #endif
 }
 
