@@ -11,7 +11,6 @@
 
 #include <cm/memory>
 
-#include "cmCMakePath.h"
 #include "cmFileSet.h"
 #include "cmGeneratorExpression.h"
 #include "cmLinkItem.h"
@@ -90,54 +89,6 @@ private:
   std::unique_ptr<cmCompiledGeneratorExpression> const ge;
 };
 
-class TargetPropertyEntryPath : public cmGeneratorTarget::TargetPropertyEntry
-{
-public:
-  TargetPropertyEntryPath(BT<std::string> propertyValue,
-                          cmLinkImplItem const& item = NoLinkImplItem)
-    : cmGeneratorTarget::TargetPropertyEntry(item)
-    , PropertyValue(std::move(propertyValue.Value))
-    , Backtrace(propertyValue.Backtrace)
-  {
-  }
-
-  std::string const& Evaluate(cmLocalGenerator*, std::string const&,
-                              cmGeneratorTarget const*,
-                              cmGeneratorExpressionDAGChecker*,
-                              std::string const&) const override
-  {
-    this->UpdateValue();
-    return this->Value;
-  }
-
-  cmListFileBacktrace GetBacktrace() const override
-  {
-    return this->Backtrace;
-  }
-
-  std::string const& GetInput() const override
-  {
-    this->UpdateValue();
-    return this->Value;
-  }
-
-private:
-  void UpdateValue() const;
-
-  cmCMakePath PropertyValue;
-  cmListFileBacktrace Backtrace;
-  mutable std::string Value;
-  mutable bool ValueStale = true;
-};
-
-void TargetPropertyEntryPath::UpdateValue() const
-{
-  if (this->ValueStale) {
-    this->Value = this->PropertyValue.String();
-    this->ValueStale = false;
-  }
-}
-
 class TargetPropertyEntryFileSet
   : public cmGeneratorTarget::TargetPropertyEntry
 {
@@ -213,24 +164,6 @@ cmGeneratorTarget::TargetPropertyEntry::Create(
 
   return std::unique_ptr<cmGeneratorTarget::TargetPropertyEntry>(
     cm::make_unique<TargetPropertyEntryString>(propertyValue));
-}
-
-std::unique_ptr<cmGeneratorTarget::TargetPropertyEntry>
-cmGeneratorTarget::TargetPropertyEntry::CreateForPath(
-  cmake& cmakeInstance, const BT<std::string>& propertyValue,
-  bool evaluateForBuildsystem)
-{
-  if (cmGeneratorExpression::Find(propertyValue.Value) != std::string::npos) {
-    cmGeneratorExpression ge(cmakeInstance, propertyValue.Backtrace);
-    std::unique_ptr<cmCompiledGeneratorExpression> cge =
-      ge.Parse(propertyValue.Value);
-    cge->SetEvaluateForBuildsystem(evaluateForBuildsystem);
-    return std::unique_ptr<cmGeneratorTarget::TargetPropertyEntry>(
-      cm::make_unique<TargetPropertyEntryGenex>(std::move(cge)));
-  }
-
-  return std::unique_ptr<cmGeneratorTarget::TargetPropertyEntry>(
-    cm::make_unique<TargetPropertyEntryPath>(propertyValue));
 }
 
 std::unique_ptr<cmGeneratorTarget::TargetPropertyEntry>

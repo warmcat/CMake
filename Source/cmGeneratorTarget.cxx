@@ -84,17 +84,6 @@ static void CreatePropertyGeneratorExpressions(
   }
 }
 
-static void CreatePropertyGeneratorExpressionsForPaths(
-  cmake& cmakeInstance, cmBTStringRange entries,
-  std::vector<std::unique_ptr<cmGeneratorTarget::TargetPropertyEntry>>& items,
-  bool evaluateForBuildsystem = false)
-{
-  for (auto const& entry : entries) {
-    items.push_back(cmGeneratorTarget::TargetPropertyEntry::CreateForPath(
-      cmakeInstance, entry, evaluateForBuildsystem));
-  }
-}
-
 cmGeneratorTarget::cmGeneratorTarget(cmTarget* t, cmLocalGenerator* lg)
   : Target(t)
 {
@@ -104,9 +93,9 @@ cmGeneratorTarget::cmGeneratorTarget(cmTarget* t, cmLocalGenerator* lg)
 
   this->GlobalGenerator->ComputeTargetObjectDirectory(this);
 
-  CreatePropertyGeneratorExpressionsForPaths(*lg->GetCMakeInstance(),
-                                             t->GetIncludeDirectoriesEntries(),
-                                             this->IncludeDirectoriesEntries);
+  CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
+                                     t->GetIncludeDirectoriesEntries(),
+                                     this->IncludeDirectoriesEntries);
 
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetCompileOptionsEntries(),
@@ -124,15 +113,15 @@ cmGeneratorTarget::cmGeneratorTarget(cmTarget* t, cmLocalGenerator* lg)
                                      t->GetLinkOptionsEntries(),
                                      this->LinkOptionsEntries);
 
-  CreatePropertyGeneratorExpressionsForPaths(*lg->GetCMakeInstance(),
-                                             t->GetLinkDirectoriesEntries(),
-                                             this->LinkDirectoriesEntries);
+  CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
+                                     t->GetLinkDirectoriesEntries(),
+                                     this->LinkDirectoriesEntries);
 
-  CreatePropertyGeneratorExpressionsForPaths(*lg->GetCMakeInstance(),
-                                             t->GetPrecompileHeadersEntries(),
-                                             this->PrecompileHeadersEntries);
+  CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
+                                     t->GetPrecompileHeadersEntries(),
+                                     this->PrecompileHeadersEntries);
 
-  CreatePropertyGeneratorExpressionsForPaths(
+  CreatePropertyGeneratorExpressions(
     *lg->GetCMakeInstance(), t->GetSourceEntries(), this->SourceEntries, true);
 
   this->PolicyMap = t->GetPolicyMap();

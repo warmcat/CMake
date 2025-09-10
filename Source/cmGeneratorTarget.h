@@ -1532,9 +1532,6 @@ public:
   static std::unique_ptr<TargetPropertyEntry> Create(
     cmake& cmakeInstance, const BT<std::string>& propertyValue,
     bool evaluateForBuildsystem = false);
-  static std::unique_ptr<TargetPropertyEntry> CreateForPath(
-    cmake& cmakeInstance, const BT<std::string>& propertyValue,
-    bool evaluateForBuildsystem = false);
   static std::unique_ptr<TargetPropertyEntry> CreateFileSet(
     std::vector<std::string> dirs, bool contextSensitiveDirs,
     std::unique_ptr<cmCompiledGeneratorExpression> entryCge,

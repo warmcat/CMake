@@ -1347,6 +1347,12 @@ void cmake::SetArgs(std::vector<std::string> const& args)
                        return false;
 #endif
                      } },
+    CommandArgument{ "--experimental-path-caching",
+                     CommandArgument::Values::Zero,
+                     [](std::string const&, cmake*) -> bool {
+                       cmPathCacheControl::SetEnabled(true);
+                       return true;
+                     } },
   };
 
 #if defined(CMAKE_HAVE_VS_GENERATORS)

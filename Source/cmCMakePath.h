@@ -6,6 +6,7 @@
 #include "cmConfigure.h" // IWYU pragma: keep
 
 #include "cmPathCache.h"
+#include "cmPathCacheControl.h"
 
 #include <cstddef>
 #include <string>
@@ -136,10 +137,16 @@ public:
   template <typename Source, typename = enable_if_move_pathable<Source>>
   cmCMakePath(Source source, format fmt = generic_format)
   {
-    cm::filesystem::path p = FormatPath(std::move(source), fmt);
-    this->DirId =
-      cmPathCache::instance().GetId(p.parent_path().generic_string());
-    this->FileName = p.filename().generic_string();
+    this->IsCached = cmPathCacheControl::IsEnabled();
+    if (this->IsCached) {
+      cm::filesystem::path p = FormatPath(std::move(source), fmt);
+      this->DirId =
+        cmPathCache::instance().GetId(p.parent_path().generic_string());
+      this->FileName = p.filename().generic_string();
+    } else {
+      this->Path = FormatPath(std::move(source), fmt);
+      this->IsPathStale = false;
+    }
   }
 #endif
 
@@ -208,21 +215,33 @@ public:
   template <typename Source, typename = enable_if_move_pathable<Source>>
   cmCMakePath& operator=(Source&& source)
   {
-    cm::filesystem::path p(std::forward<Source>(source));
-    this->DirId =
-      cmPathCache::instance().GetId(p.parent_path().generic_string());
-    this->FileName = p.filename().generic_string();
-    this->IsPathStale = true;
+    this->IsCached = cmPathCacheControl::IsEnabled();
+    if (this->IsCached) {
+      cm::filesystem::path p(std::forward<Source>(source));
+      this->DirId =
+        cmPathCache::instance().GetId(p.parent_path().generic_string());
+      this->FileName = p.filename().generic_string();
+      this->IsPathStale = true;
+    } else {
+      this->Path = std::forward<Source>(source);
+      this->IsPathStale = false;
+    }
     return *this;
   }
   template <typename Source, typename = enable_if_pathable<Source>>
   cmCMakePath& operator=(Source const& source)
   {
-    cm::filesystem::path p(source);
-    this->DirId =
-      cmPathCache::instance().GetId(p.parent_path().generic_string());
-    this->FileName = p.filename().generic_string();
-    this->IsPathStale = true;
+    this->IsCached = cmPathCacheControl::IsEnabled();
+    if (this->IsCached) {
+      cm::filesystem::path p(source);
+      this->DirId =
+        cmPathCache::instance().GetId(p.parent_path().generic_string());
+      this->FileName = p.filename().generic_string();
+      this->IsPathStale = true;
+    } else {
+      this->Path = source;
+      this->IsPathStale = false;
+    }
     return *this;
   }
 #endif
@@ -555,6 +574,7 @@ private:
   mutable cm::filesystem::path Path;
   size_t DirId = static_cast<size_t>(-1);
   std::string FileName;
+  bool IsCached = false;
   mutable bool IsPathStale = true;
 };
 
