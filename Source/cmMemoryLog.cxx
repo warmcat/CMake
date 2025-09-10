@@ -48,7 +48,14 @@ void cmMemoryLog::LogDeallocation(size_t size)
 
 void cmMemoryLog::WriteLog()
 {
-  if (!this->Enabled || this->LogPath.empty()) {
+  if (!this->Enabled) {
+    return;
+  }
+
+  // Disable logging to prevent deadlocks from allocations during file I/O.
+  this->Enabled = false;
+
+  if (this->LogPath.empty()) {
     return;
   }
 
@@ -56,7 +63,9 @@ void cmMemoryLog::WriteLog()
 
   cmsys::ofstream logFile(this->LogPath.c_str());
   if (!logFile) {
-    cmSystemTools::Error("Could not open memory log file for writing: " + this->LogPath);
+    // We can't use cmSystemTools::Error because it might allocate.
+    // Just write to stderr directly.
+    fprintf(stderr, "Could not open memory log file for writing: %s\n", this->LogPath.c_str());
     return;
   }
 
@@ -72,7 +81,4 @@ void cmMemoryLog::WriteLog()
   logFile << "Net Allocations (outstanding): " << netAllocations << std::endl;
   logFile << "Net Memory (outstanding): " << netMemory << " bytes" << std::endl;
   logFile << "--- End CMake Memory Log ---" << std::endl;
-
-  // Disable logging after writing to prevent issues during shutdown
-  this->Enabled = false;
 }
