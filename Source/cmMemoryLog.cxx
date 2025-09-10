@@ -7,10 +7,11 @@
 #include <iostream>
 #include <string>
 
+static cmMemoryLog g_MemoryLogInstance;
+
 cmMemoryLog& cmMemoryLog::GetInstance()
 {
-  static cmMemoryLog instance;
-  return instance;
+  return g_MemoryLogInstance;
 }
 
 void cmMemoryLog::Enable(const std::string& logPath)
