@@ -2903,6 +2903,15 @@ void cmake::StopDebuggerIfNeeded(int exitCode)
 // handle a command line invocation
 int cmake::Run(std::vector<std::string> const& args, bool noconfigure)
 {
+#ifdef CMAKE_DEBUG_MEMORY
+  std::string mem_log_file;
+  if (cmSystemTools::GetEnv("CMAKE_DEBUG_MEMORY_LOG", mem_log_file)) {
+    if (!mem_log_file.empty()) {
+      cmMemoryLog::GetInstance().Enable(mem_log_file);
+    }
+  }
+#endif
+
   // Process the arguments
   this->SetArgs(args);
   if (cmSystemTools::GetErrorOccurredFlag()) {
