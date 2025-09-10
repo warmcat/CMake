@@ -35,6 +35,7 @@
 #include "cmCMakePath.h"
 #include "cmCMakePresetsGraph.h"
 #include "cmCommandLineArgument.h"
+#include "cmMemoryLog.h"
 #include "cmPathCacheControl.h"
 #include "cmCommands.h"
 #ifdef CMake_ENABLE_DEBUGGER
