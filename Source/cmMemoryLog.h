@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <map>
 
 class cmMemoryLog
 {
@@ -31,6 +32,8 @@ private:
   long long TotalDeallocations = 0;
   long long TotalMemoryAllocated = 0;
   long long TotalMemoryDeallocated = 0;
+
+  std::map<size_t, long long> AllocationHistogram;
 
   std::mutex Mutex;
 };

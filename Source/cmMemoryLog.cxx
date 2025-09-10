@@ -6,6 +6,8 @@
 #include "cmsys/FStream.hxx"
 #include <iostream>
 #include <string>
+#include <algorithm>
+#include <vector>
 
 static cmMemoryLog g_MemoryLogInstance;
 
@@ -34,6 +36,7 @@ void cmMemoryLog::LogAllocation(size_t size)
   std::lock_guard<std::mutex> lock(this->Mutex);
   this->TotalAllocations++;
   this->TotalMemoryAllocated += size;
+  this->AllocationHistogram[size]++;
 }
 
 void cmMemoryLog::LogDeallocation(size_t size)
@@ -80,5 +83,29 @@ void cmMemoryLog::WriteLog()
 
   logFile << "Net Allocations (outstanding): " << netAllocations << std::endl;
   logFile << "Net Memory (outstanding): " << netMemory << " bytes" << std::endl;
+  logFile << std::endl;
+
+  logFile << "--- Top 20 Allocation Sizes ---" << std::endl;
+  logFile << "Size (bytes) | Count" << std::endl;
+  logFile << "-------------------------------" << std::endl;
+
+  std::vector<std::pair<size_t, long long>> sorted_histogram;
+  for (auto const& [size, count] : this->AllocationHistogram) {
+    sorted_histogram.push_back({size, count});
+  }
+  std::sort(sorted_histogram.begin(), sorted_histogram.end(),
+            [](const auto& a, const auto& b) {
+    return a.second > b.second;
+  });
+
+  int count = 0;
+  for (auto const& [size, num] : sorted_histogram) {
+    if (count >= 20) {
+      break;
+    }
+    logFile << size << " | " << num << std::endl;
+    count++;
+  }
+
   logFile << "--- End CMake Memory Log ---" << std::endl;
 }
