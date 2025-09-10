@@ -35,7 +35,6 @@
 #include "cmCMakePath.h"
 #include "cmCMakePresetsGraph.h"
 #include "cmCommandLineArgument.h"
-#include "cmMemoryLog.h"
 #include "cmPathCacheControl.h"
 #include "cmCommands.h"
 #ifdef CMake_ENABLE_DEBUGGER
@@ -2904,15 +2903,6 @@ void cmake::StopDebuggerIfNeeded(int exitCode)
 // handle a command line invocation
 int cmake::Run(std::vector<std::string> const& args, bool noconfigure)
 {
-#ifdef CMAKE_DEBUG_MEMORY
-  std::string mem_log_file;
-  if (cmSystemTools::GetEnv("CMAKE_DEBUG_MEMORY_LOG", mem_log_file)) {
-    if (!mem_log_file.empty()) {
-      cmMemoryLog::GetInstance().Enable(mem_log_file);
-    }
-  }
-#endif
-
   // Process the arguments
   this->SetArgs(args);
   if (cmSystemTools::GetErrorOccurredFlag()) {
@@ -3062,13 +3052,6 @@ int cmake::Run(std::vector<std::string> const& args, bool noconfigure)
   std::string message = cmStrCat("Build files have been written to: ",
                                  this->GetHomeOutputDirectory());
   this->UpdateProgress(message, -1);
-
-#ifdef CMAKE_DEBUG_MEMORY
-  if (!this->GetIsInTryCompile()) {
-    cmMemoryLog::GetInstance().WriteLog();
-  }
-#endif
-
   return ret;
 }
 

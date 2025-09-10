@@ -59,8 +59,6 @@ add_library(ManifestLib INTERFACE)
 #
 # create a library used by the command line and the GUI
 #
-option(CMAKE_DEBUG_MEMORY "Enable memory debugging and logging" OFF)
-
 add_library(
   CMakeLib
   # Lexers/Parsers
@@ -397,8 +395,6 @@ add_library(
   cmLocale.h
   cmMakefile.cxx
   cmMakefile.h
-  cmMemoryLog.cxx
-  cmMemoryLog.h
   cmMakefileTargetGenerator.cxx
   cmMakefileExecutableTargetGenerator.cxx
   cmMakefileLibraryTargetGenerator.cxx
@@ -1074,11 +1070,6 @@ if(WIN32 AND NOT UNIX)
 endif()
 
 target_compile_definitions(CMakeLib PUBLIC ${CLANG_TIDY_DEFINITIONS})
-
-if(CMAKE_DEBUG_MEMORY)
-  target_sources(CMakeLib PRIVATE cmMemoryOverride.cxx)
-  target_compile_definitions(CMakeLib PRIVATE CMAKE_DEBUG_MEMORY)
-endif()
 
 #
 # Build CTestLib
