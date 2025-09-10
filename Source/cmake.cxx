@@ -35,7 +35,6 @@
 #include "cmCMakePath.h"
 #include "cmCMakePresetsGraph.h"
 #include "cmCommandLineArgument.h"
-#include "cmPathCacheControl.h"
 #include "cmCommands.h"
 #ifdef CMake_ENABLE_DEBUGGER
 #  include "cmDebuggerAdapter.h"
@@ -1346,12 +1345,6 @@ void cmake::SetArgs(std::vector<std::string> const& args)
                                             "for --debugger-dap-log");
                        return false;
 #endif
-                     } },
-    CommandArgument{ "--experimental-path-caching",
-                     CommandArgument::Values::Zero,
-                     [](std::string const&, cmake*) -> bool {
-                       cmPathCacheControl::SetEnabled(true);
-                       return true;
                      } },
   };
 

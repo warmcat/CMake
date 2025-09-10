@@ -23,35 +23,23 @@
 
 cmCMakePath::cmCMakePath()
 {
-  this->IsCached = cmPathCacheControl::IsEnabled();
-  if (this->IsCached) {
-    this->DirId = cmPathCache::instance().GetId("");
-    this->FileName = "";
-  } else {
-    this->IsPathStale = false;
-  }
+  this->DirId = cmPathCache::instance().GetId("");
+  this->FileName = "";
 }
 
 cmCMakePath::cmCMakePath(cmCMakePath&& path) noexcept
   : Path(std::move(path.Path))
   , DirId(path.DirId)
   , FileName(std::move(path.FileName))
-  , IsCached(path.IsCached)
   , IsPathStale(path.IsPathStale)
 {
 }
 
 cmCMakePath::cmCMakePath(cm::filesystem::path path)
 {
-  this->IsCached = cmPathCacheControl::IsEnabled();
-  if (this->IsCached) {
-    this->DirId =
-      cmPathCache::instance().GetId(path.parent_path().generic_string());
-    this->FileName = path.filename().generic_string();
-  } else {
-    this->Path = std::move(path);
-    this->IsPathStale = false;
-  }
+  this->DirId =
+    cmPathCache::instance().GetId(path.parent_path().generic_string());
+  this->FileName = path.filename().generic_string();
 }
 
 cmCMakePath::cmCMakePath(cm::string_view source, format fmt)
@@ -77,7 +65,7 @@ cmCMakePath::cmCMakePath(std::string&& source, format fmt)
 
 void cmCMakePath::UpdatePath() const
 {
-  if (this->IsCached && this->IsPathStale) {
+  if (this->IsPathStale) {
     this->Path = cmPathCache::instance().GetPath(this->DirId);
     this->Path /= this->FileName;
     this->IsPathStale = false;
@@ -118,7 +106,6 @@ cmCMakePath& cmCMakePath::ReplaceWideExtension(cm::string_view extension)
     file.append(std::string(extension));
   }
   this->Path.replace_filename(file);
-  this->IsCached = false;
   return *this;
 }
 
@@ -243,14 +230,12 @@ void cmCMakePath::GetNativePath(std::wstring& path) const
 void cmCMakePath::Clear() noexcept
 {
   this->Path.clear();
-  this->IsCached = false;
 }
 
 cmCMakePath& cmCMakePath::RemoveFileName()
 {
   this->UpdatePath();
   this->Path.remove_filename();
-  this->IsCached = false;
   return *this;
 }
 
@@ -259,7 +244,6 @@ cmCMakePath& cmCMakePath::ReplaceFileName(cmCMakePath const& filename)
   this->UpdatePath();
   if (this->Path.has_filename()) {
     this->Path.replace_filename(filename.Path);
-    this->IsCached = false;
   }
   return *this;
 }
@@ -270,7 +254,6 @@ cmCMakePath& cmCMakePath::ReplaceFileName(cm::filesystem::path const& filename)
   this->UpdatePath();
   if (this->Path.has_filename()) {
     this->Path.replace_filename(filename);
-    this->IsCached = false;
   }
   return *this;
 }
@@ -280,7 +263,6 @@ cmCMakePath& cmCMakePath::ReplaceFileName(std::string const& filename)
   this->UpdatePath();
   if (this->Path.has_filename()) {
     this->Path.replace_filename(filename);
-    this->IsCached = false;
   }
   return *this;
 }
@@ -290,7 +272,6 @@ cmCMakePath& cmCMakePath::ReplaceFileName(cm::string_view filename)
   this->UpdatePath();
   if (this->Path.has_filename()) {
     this->Path.replace_filename(filename);
-    this->IsCached = false;
   }
   return *this;
 }
@@ -300,7 +281,6 @@ cmCMakePath& cmCMakePath::ReplaceExtension(cmCMakePath const& extension)
 {
   this->UpdatePath();
   this->Path.replace_extension(extension.Path);
-  this->IsCached = false;
   return *this;
 }
 
@@ -309,7 +289,6 @@ cmCMakePath& cmCMakePath::ReplaceExtension(cm::filesystem::path const& extension
 {
   this->UpdatePath();
   this->Path.replace_extension(extension);
-  this->IsCached = false;
   return *this;
 }
 
@@ -317,7 +296,6 @@ cmCMakePath& cmCMakePath::ReplaceExtension(std::string const& extension)
 {
   this->UpdatePath();
   this->Path.replace_extension(extension);
-  this->IsCached = false;
   return *this;
 }
 
@@ -325,7 +303,6 @@ cmCMakePath& cmCMakePath::ReplaceExtension(cm::string_view const extension)
 {
   this->UpdatePath();
   this->Path.replace_extension(extension);
-  this->IsCached = false;
   return *this;
 }
 #endif
@@ -350,10 +327,8 @@ cmCMakePath& cmCMakePath::RemoveWideExtension()
 
 int cmCMakePath::Compare(cmCMakePath const& path) const noexcept
 {
-  if (this->IsCached && path.IsCached) {
-    if (this->DirId == path.DirId) {
-      return this->FileName.compare(path.FileName);
-    }
+  if (this->DirId == path.DirId) {
+    return this->FileName.compare(path.FileName);
   }
 
   this->UpdatePath();
@@ -363,11 +338,8 @@ int cmCMakePath::Compare(cmCMakePath const& path) const noexcept
 
 bool cmCMakePath::IsEmpty() const noexcept
 {
-  if (this->IsCached) {
-    return this->FileName.empty() &&
-      cmPathCache::instance().GetPath(this->DirId).empty();
-  }
-  return this->Path.empty();
+  return this->FileName.empty() &&
+    cmPathCache::instance().GetPath(this->DirId).empty();
 }
 
 bool cmCMakePath::HasRootPath() const
@@ -528,7 +500,6 @@ void cmCMakePath::swap(cmCMakePath& other) noexcept
   std::swap(this->Path, other.Path);
   std::swap(this->DirId, other.DirId);
   std::swap(this->FileName, other.FileName);
-  std::swap(this->IsCached, other.IsCached);
   std::swap(this->IsPathStale, other.IsPathStale);
 }
 

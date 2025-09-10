@@ -9,7 +9,6 @@
 
 #include "cmCMakePath.h"
 #include "cmPathCache.h"
-#include "cmPathCacheControl.h"
 #include "cmSystemTools.h"
 
 #include "testCommon.h"
@@ -19,8 +18,6 @@ namespace {
 bool testPathCaching()
 {
   std::cout << "testPathCaching()" << std::endl;
-
-  cmPathCacheControl::SetEnabled(true);
 
   std::string long_dir = "/a/very/long/directory/path/that/is/repeated/often";
   std::vector<cmCMakePath> paths;
@@ -58,8 +55,6 @@ bool testPathCaching()
     return false;
   }
 
-  cmPathCacheControl::SetEnabled(false);
-
   std::cout << " => passed" << std::endl;
   return true;
 }
@@ -67,8 +62,6 @@ bool testPathCaching()
 bool testSubProject()
 {
   std::cout << "testSubProject()" << std::endl;
-
-  cmPathCacheControl::SetEnabled(true);
 
   cmCMakePath buildDir("/home/agreen/projects/cmake/build/Tests/SubProject");
   std::cout << "  buildDir: " << buildDir.String() << std::endl;
@@ -87,8 +80,6 @@ bool testSubProject()
     return false;
   }
 
-  cmPathCacheControl::SetEnabled(false);
-
   std::cout << " => passed" << std::endl;
   return true;
 }
@@ -96,8 +87,6 @@ bool testSubProject()
 bool testSubProjectFile()
 {
   std::cout << "testSubProjectFile()" << std::endl;
-
-  cmPathCacheControl::SetEnabled(true);
 
   cmCMakePath buildDir(
     "/home/agreen/projects/cmake/build/Tests/SubProject/foo");
@@ -117,8 +106,6 @@ bool testSubProjectFile()
     return false;
   }
 
-  cmPathCacheControl::SetEnabled(false);
-
   std::cout << " => passed" << std::endl;
   return true;
 }
@@ -126,8 +113,6 @@ bool testSubProjectFile()
 bool testOutDir()
 {
   std::cout << "testOutDir()" << std::endl;
-
-  cmPathCacheControl::SetEnabled(true);
 
   cmCMakePath top("/home/agreen/projects/cmake/build");
   cmCMakePath testc1_lib = top;
@@ -146,8 +131,6 @@ bool testOutDir()
     return false;
   }
 
-  cmPathCacheControl::SetEnabled(false);
-
   std::cout << " => passed" << std::endl;
   return true;
 }
@@ -155,8 +138,6 @@ bool testOutDir()
 bool testCurrentWorkingDirectory()
 {
   std::cout << "testCurrentWorkingDirectory()" << std::endl;
-
-  cmPathCacheControl::SetEnabled(true);
 
   std::string path = "/home/agreen/projects/cmake/build/Tests/OutDir";
   cmSystemTools::SetLogicalWorkingDirectory(path);
@@ -169,8 +150,6 @@ bool testCurrentWorkingDirectory()
               << std::endl;
     return false;
   }
-
-  cmPathCacheControl::SetEnabled(false);
 
   std::cout << " => passed" << std::endl;
   return true;
