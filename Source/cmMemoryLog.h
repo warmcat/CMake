@@ -17,9 +17,10 @@ public:
   void LogDeallocation(size_t size);
   void WriteLog();
 
-private:
+public:
   cmMemoryLog() = default;
   ~cmMemoryLog() = default;
+private:
   cmMemoryLog(const cmMemoryLog&) = delete;
   cmMemoryLog& operator=(const cmMemoryLog&) = delete;
 
