@@ -106,7 +106,8 @@ public:
                               cmGeneratorExpressionDAGChecker*,
                               std::string const&) const override
   {
-    return this->PropertyValue.String();
+    this->UpdateValue();
+    return this->Value;
   }
 
   cmListFileBacktrace GetBacktrace() const override
@@ -116,13 +117,26 @@ public:
 
   std::string const& GetInput() const override
   {
-    return this->PropertyValue.String();
+    this->UpdateValue();
+    return this->Value;
   }
 
 private:
+  void UpdateValue() const;
+
   cmCMakePath PropertyValue;
   cmListFileBacktrace Backtrace;
+  mutable std::string Value;
+  mutable bool ValueStale = true;
 };
+
+void TargetPropertyEntryPath::UpdateValue() const
+{
+  if (this->ValueStale) {
+    this->Value = this->PropertyValue.String();
+    this->ValueStale = false;
+  }
+}
 
 class TargetPropertyEntryFileSet
   : public cmGeneratorTarget::TargetPropertyEntry
