@@ -1075,6 +1075,11 @@ endif()
 
 target_compile_definitions(CMakeLib PUBLIC ${CLANG_TIDY_DEFINITIONS})
 
+if(CMAKE_DEBUG_MEMORY)
+  target_sources(CMakeLib PRIVATE cmMemoryOverride.cxx)
+  target_compile_definitions(CMakeLib PRIVATE CMAKE_DEBUG_MEMORY)
+endif()
+
 #
 # Build CTestLib
 #
@@ -1286,11 +1291,6 @@ if(WIN32 OR (CYGWIN AND TARGET LibUUID::LibUUID))
       CPack/WiX/cmWIXSourceWriter.h
     )
   target_link_libraries(CPackLib PUBLIC $<TARGET_NAME_IF_EXISTS:LibUUID::LibUUID>)
-endif()
-
-if(CMAKE_DEBUG_MEMORY)
-  target_sources(CMakeLib PRIVATE cmMemoryOverride.cxx)
-  target_compile_definitions(CMakeLib PRIVATE CMAKE_DEBUG_MEMORY)
 endif()
 
 if(APPLE)
