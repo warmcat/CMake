@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "cmake.h"
 #include "cmGlobalGenerator.h"
 #include "cmPath.h"
 
