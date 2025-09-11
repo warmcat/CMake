@@ -25,6 +25,7 @@
 #include "cmDuration.h"
 #include "cmExportSet.h"
 #include "cmLocalGenerator.h"
+#include "cmPath.h"
 #include "cmStateSnapshot.h"
 #include "cmStateTypes.h"
 #include "cmStringAlgorithms.h"
@@ -57,6 +58,7 @@ class cmSourceFile;
 class cmState;
 class cmStateDirectory;
 class cmake;
+class cmPath;
 
 namespace detail {
 inline void AppendStrs(std::vector<std::string>&)
@@ -490,6 +492,8 @@ public:
   std::set<std::string> const& GetDirectoryContent(std::string const& dir,
                                                    bool needDisk = true);
 
+  std::vector<cmPath> SplitPaths(const std::string& value) const;
+
   void IndexTarget(cmTarget* t);
   void IndexGeneratorTarget(cmGeneratorTarget* gt);
 
@@ -652,6 +656,9 @@ public:
   }
 
   std::string const& GetRealPath(std::string const& dir);
+
+  std::shared_ptr<const std::string> GetSharedBasePath(
+    const std::string& path, std::string& relative_part) const;
 
   std::string NewDeferId();
 
@@ -918,6 +925,9 @@ private:
     FilenameTargetDepends;
 
   std::map<std::string, std::string> RealPaths;
+
+  mutable std::map<std::string, std::shared_ptr<const std::string>>
+    SharedBasePaths;
 
   std::unordered_set<std::string> GeneratedFiles;
 

@@ -2044,9 +2044,10 @@ void cmGlobalGenerator::CheckTargetProperties()
       std::string incDirs = cmGeneratorExpression::Preprocess(
         *incDirProp, cmGeneratorExpression::StripAllGeneratorExpressions);
 
-      cmList incs(incDirs);
+      std::vector<cmPath> incs = this->SplitPaths(incDirs);
 
-      for (std::string const& incDir : incs) {
+      for (cmPath const& incPath : incs) {
+        const std::string& incDir = incPath.ToString();
         if (incDir.size() > 9 && cmIsNOTFOUND(incDir)) {
           std::string varName = incDir.substr(0, incDir.size() - 9);
           if (state->GetCacheEntryPropertyAsBool(varName, "ADVANCED")) {
@@ -3916,10 +3917,100 @@ void cmGlobalGenerator::AddCMakeFilesToRebuild(
   files.insert(files.end(), this->TestFiles.begin(), this->TestFiles.end());
 }
 
+#include "cmSystemTools.h"
+#include <memory>
+
+#include "cmPath.h"
+
+std::vector<cmPath> cmGlobalGenerator::SplitPaths(
+  const std::string& value) const
+{
+  std::vector<cmPath> result;
+  if (value.empty()) {
+    return result;
+  }
+
+  std::string element;
+  // Break the string at non-escaped semicolons not nested in [].
+  int squareNesting = 0;
+  auto last = value.begin();
+  auto const cend = value.end();
+  for (auto c = last; c != cend; ++c) {
+    switch (*c) {
+      case '\\': {
+        auto cnext = c + 1;
+        if ((cnext != cend) && *cnext == ';') {
+          element.append(last, c);
+          last = cnext;
+          c = cnext;
+        }
+      } break;
+      case '[': {
+        ++squareNesting;
+      } break;
+      case ']': {
+        --squareNesting;
+      } break;
+      case ';': {
+        if (squareNesting == 0) {
+          element.append(last, c);
+          last = c + 1;
+          if (!element.empty()) {
+            result.emplace_back(element, const_cast<cmGlobalGenerator*>(this));
+            element.clear();
+          }
+        }
+      } break;
+      default: {
+      } break;
+    }
+  }
+  element.append(last, cend);
+  if (!element.empty()) {
+    result.emplace_back(element, const_cast<cmGlobalGenerator*>(this));
+  }
+  return result;
+}
+
 bool cmGlobalGenerator::ShouldWarnExperimental(cm::string_view featureName,
                                                cm::string_view featureUuid)
 {
   return this->WarnedExperimental
     .emplace(cmStrCat(featureName, '-', featureUuid))
     .second;
+}
+
+std::shared_ptr<const std::string> cmGlobalGenerator::GetSharedBasePath(
+  const std::string& path, std::string& relative_part) const
+{
+  const std::string& home = this->CMakeInstance->GetHomeDirectory();
+  const std::string& home_out =
+    this->CMakeInstance->GetHomeOutputDirectory();
+
+  std::string base;
+  if (!home_out.empty() && cmSystemTools::IsSubDirectory(path, home_out)) {
+    base = home_out;
+  } else if (!home.empty() && cmSystemTools::IsSubDirectory(path, home)) {
+    base = home;
+  }
+
+  if (base.empty()) {
+    relative_part = path;
+    return nullptr;
+  }
+
+  auto it = this->SharedBasePaths.find(base);
+  if (it == this->SharedBasePaths.end()) {
+    it = this->SharedBasePaths
+           .emplace(base, std::make_shared<const std::string>(base))
+           .first;
+  }
+
+  relative_part = path.substr(base.length());
+  if (!relative_part.empty() && relative_part[0] != '/' &&
+      relative_part[0] != '\\') {
+    relative_part.insert(0, 1, '/');
+  }
+
+  return it->second;
 }
