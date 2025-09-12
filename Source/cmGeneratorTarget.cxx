@@ -92,11 +92,9 @@ cmGeneratorTarget::cmGeneratorTarget(cmTarget* t, cmLocalGenerator* lg)
   if (t->GetName() == "install/strip") {
     cmBTStringRange entries = t->GetIncludeDirectoriesEntries();
     if (!entries.empty()) {
-      const std::string& prop_val = entries.front().Value;
-      std::cout << "DEBUG: install/strip INCLUDE_DIRECTORIES size = "
-                << prop_val.size()
-                << " in directory " << lg->GetCurrentBinaryDirectory()
-                << std::endl;
+      const std::string& prop_val = entries.begin()->Value;
+      std::cout << "DEBUG: install/strip UNEVALUATED INCLUDE_DIRECTORIES: "
+                << prop_val << std::endl;
     }
   }
   this->Makefile = this->Target->GetMakefile();
