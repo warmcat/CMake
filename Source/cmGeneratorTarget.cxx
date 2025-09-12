@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 #include <sstream>
 #include <type_traits>
 #include <unordered_set>
@@ -94,34 +95,50 @@ cmGeneratorTarget::cmGeneratorTarget(cmTarget* t, cmLocalGenerator* lg)
 
   this->GlobalGenerator->ComputeTargetObjectDirectory(this);
 
+  std::cout << "PathCounter-Context: Target='" << this->GetName()
+            << "' Property='INCLUDE_DIRECTORIES'" << std::endl;
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetIncludeDirectoriesEntries(),
                                      this->IncludeDirectoriesEntries);
 
+  std::cout << "PathCounter-Context: Target='" << this->GetName()
+            << "' Property='COMPILE_OPTIONS'" << std::endl;
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetCompileOptionsEntries(),
                                      this->CompileOptionsEntries);
 
+  std::cout << "PathCounter-Context: Target='" << this->GetName()
+            << "' Property='COMPILE_FEATURES'" << std::endl;
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetCompileFeaturesEntries(),
                                      this->CompileFeaturesEntries);
 
+  std::cout << "PathCounter-Context: Target='" << this->GetName()
+            << "' Property='COMPILE_DEFINITIONS'" << std::endl;
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetCompileDefinitionsEntries(),
                                      this->CompileDefinitionsEntries);
 
+  std::cout << "PathCounter-Context: Target='" << this->GetName()
+            << "' Property='LINK_OPTIONS'" << std::endl;
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetLinkOptionsEntries(),
                                      this->LinkOptionsEntries);
 
+  std::cout << "PathCounter-Context: Target='" << this->GetName()
+            << "' Property='LINK_DIRECTORIES'" << std::endl;
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetLinkDirectoriesEntries(),
                                      this->LinkDirectoriesEntries);
 
+  std::cout << "PathCounter-Context: Target='" << this->GetName()
+            << "' Property='PRECOMPILE_HEADERS'" << std::endl;
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetPrecompileHeadersEntries(),
                                      this->PrecompileHeadersEntries);
 
+  std::cout << "PathCounter-Context: Target='" << this->GetName()
+            << "' Property='SOURCES'" << std::endl;
   CreatePropertyGeneratorExpressions(
     *lg->GetCMakeInstance(), t->GetSourceEntries(), this->SourceEntries, true);
 

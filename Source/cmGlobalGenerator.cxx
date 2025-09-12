@@ -9,6 +9,7 @@
 #include <cstring>
 #include <functional>
 #include <initializer_list>
+#include <iostream>
 #include <iterator>
 #include <sstream>
 #include <type_traits>
@@ -2091,6 +2092,8 @@ void cmGlobalGenerator::CheckTargetProperties()
       std::string incDirs = cmGeneratorExpression::Preprocess(
         *incDirProp, cmGeneratorExpression::StripAllGeneratorExpressions);
 
+      std::cout << "PathCounter-Context: Target='" << target.second.GetName()
+                << "' Property='INCLUDE_DIRECTORIES'" << std::endl;
       cmList incs(incDirs);
 
       for (std::string const& incDir : incs) {
