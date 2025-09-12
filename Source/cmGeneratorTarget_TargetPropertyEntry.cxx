@@ -4,12 +4,6 @@
 #include "cmGeneratorTarget.h"
 /* clang-format on */
 
-#include <utility>
-
-#include "cmake.h"
-#include "cmGlobalGenerator.h"
-#include "cmPath.h"
-
 #include <map>
 #include <string>
 #include <utility>
@@ -17,6 +11,7 @@
 
 #include <cm/memory>
 
+#include "cmCMakePath.h"
 #include "cmFileSet.h"
 #include "cmGeneratorExpression.h"
 #include "cmLinkItem.h"
@@ -98,10 +93,10 @@ private:
 class TargetPropertyEntryPath : public cmGeneratorTarget::TargetPropertyEntry
 {
 public:
-  TargetPropertyEntryPath(BT<std::string> propertyValue, cmGlobalGenerator* gg,
+  TargetPropertyEntryPath(BT<std::string> propertyValue,
                           cmLinkImplItem const& item = NoLinkImplItem)
     : cmGeneratorTarget::TargetPropertyEntry(item)
-    , PropertyValue(std::move(propertyValue.Value), gg)
+    , PropertyValue(std::move(propertyValue.Value))
     , Backtrace(propertyValue.Backtrace)
   {
   }
@@ -111,7 +106,8 @@ public:
                               cmGeneratorExpressionDAGChecker*,
                               std::string const&) const override
   {
-    return this->PropertyValue.ToString();
+    this->UpdateValue();
+    return this->Value;
   }
 
   cmListFileBacktrace GetBacktrace() const override
@@ -121,13 +117,26 @@ public:
 
   std::string const& GetInput() const override
   {
-    return this->PropertyValue.ToString();
+    this->UpdateValue();
+    return this->Value;
   }
 
 private:
-  cmPath PropertyValue;
+  void UpdateValue() const;
+
+  cmCMakePath PropertyValue;
   cmListFileBacktrace Backtrace;
+  mutable std::string Value;
+  mutable bool ValueStale = true;
 };
+
+void TargetPropertyEntryPath::UpdateValue() const
+{
+  if (this->ValueStale) {
+    this->Value = this->PropertyValue.String();
+    this->ValueStale = false;
+  }
+}
 
 class TargetPropertyEntryFileSet
   : public cmGeneratorTarget::TargetPropertyEntry
@@ -221,8 +230,7 @@ cmGeneratorTarget::TargetPropertyEntry::CreateForPath(
   }
 
   return std::unique_ptr<cmGeneratorTarget::TargetPropertyEntry>(
-    cm::make_unique<TargetPropertyEntryPath>(
-      propertyValue, cmakeInstance.GetGlobalGenerator()));
+    cm::make_unique<TargetPropertyEntryPath>(propertyValue));
 }
 
 std::unique_ptr<cmGeneratorTarget::TargetPropertyEntry>

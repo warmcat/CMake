@@ -42,6 +42,7 @@ set(CMakeLib_TESTS
   testCMExtAlgorithm.cxx
   testCMExtEnumSet.cxx
   testList.cxx
+  testCmListView.cxx
   testCMakePath.cxx
   testCMakePathCache.cxx
   )

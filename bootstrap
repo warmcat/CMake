@@ -313,7 +313,6 @@ CMAKE_CXX_SOURCES="\
   cmList \
   cmPathCache \
   cmCMakePath \
-  cmPath \
   cmCMakePathCommand \
   cmCMakePolicyCommand \
   cmCPackPropertiesGenerator \

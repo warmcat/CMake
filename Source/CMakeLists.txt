@@ -124,8 +124,6 @@ add_library(
   cmCLocaleEnvironmentScope.cxx
   cmCMakePath.h
   cmCMakePath.cxx
-  cmPath.h
-  cmPath.cxx
   cmPathCache.cxx
   cmPathCache.h
   cmCMakePresetsErrors.cxx
@@ -377,6 +375,8 @@ add_library(
   cmLinkLineDeviceComputer.h
   cmList.h
   cmList.cxx
+  cmListView.h
+  cmListView.cxx
   cmListFileCache.cxx
   cmListFileCache.h
   cmLocalCommonGenerator.cxx
