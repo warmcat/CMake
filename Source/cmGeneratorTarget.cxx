@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 #include <sstream>
 #include <type_traits>
 #include <unordered_set>
@@ -89,6 +90,7 @@ static void CreatePropertyGeneratorExpressions(
 cmGeneratorTarget::cmGeneratorTarget(cmTarget* t, cmLocalGenerator* lg)
   : Target(t)
 {
+  std::cout << "Creating cmGeneratorTarget for: " << t->GetName() << std::endl;
   this->Makefile = this->Target->GetMakefile();
   this->LocalGenerator = lg;
   this->GlobalGenerator = this->LocalGenerator->GetGlobalGenerator();
