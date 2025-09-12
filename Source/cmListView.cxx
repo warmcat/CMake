@@ -41,13 +41,12 @@ bool cmListView::const_iterator::operator!=(const const_iterator& other) const
 
 void cmListView::const_iterator::FindNext()
 {
-  if (this->Pos == nullptr || this->Pos > this->String.end()) {
-    *this = const_iterator();
+  if (this->Pos > this->String.end()) {
     return;
   }
   if (this->Pos == this->String.end()) {
-    *this = const_iterator();
     this->Pos = this->String.end() + 1; // sentinel
+    this->CurrentElement = cm::string_view();
     return;
   }
 
@@ -102,7 +101,7 @@ loop_end:;
   }
 
   if (end_of_element == this->String.end()) {
-    this->Pos = end_of_element + 1; // sentinel
+    this->Pos = this->String.end();
   } else {
     this->Pos = end_of_element + 1;
   }
@@ -119,6 +118,7 @@ cmListView::const_iterator cmListView::begin() const
 cmListView::const_iterator cmListView::end() const
 {
   const_iterator it;
+  it.String = this->String;
   it.Pos = this->String.end() + 1; // sentinel
   return it;
 }

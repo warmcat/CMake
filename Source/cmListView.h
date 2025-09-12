@@ -31,8 +31,6 @@ public:
     using pointer = const value_type*;
     using reference = const value_type&;
 
-    const_iterator() = default;
-
     reference operator*() const { return this->CurrentElement; }
     pointer operator->() const { return &this->CurrentElement; }
 
@@ -44,6 +42,7 @@ public:
 
   private:
     friend class cmListView;
+    const_iterator() = default;
     const_iterator(cm::string_view str);
 
     void FindNext();

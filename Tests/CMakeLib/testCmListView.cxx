@@ -88,6 +88,15 @@ int testCmListView(int /*unused*/, char* /*unused*/[])
   if (!testCase("Bracket argument with no semicolon", "a[b]c", { "a[b]c" })) {
     failed++;
   }
+  if (!testCase("Single trailing semicolon", "a;", { "a", "" })) {
+    failed++;
+  }
+  if (!testCase("Single leading semicolon", ";", { "", "" })) {
+    failed++;
+  }
+  if (!testCase("Single escaped semicolon", "\\;", { ";" })) {
+    failed++;
+  }
 
   return failed;
 }
