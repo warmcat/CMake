@@ -1,6 +1,7 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file LICENSE.rst or https://cmake.org/licensing for details.  */
 #include "cmake.h"
+#include "cmPathCounter.h"
 
 #include <algorithm>
 #include <array>
@@ -2921,6 +2922,7 @@ void cmake::StopDebuggerIfNeeded(int exitCode)
 // handle a command line invocation
 int cmake::Run(std::vector<std::string> const& args, bool noconfigure)
 {
+  cmPathCounter_SetCWD(cmSystemTools::GetCurrentWorkingDirectory());
   // Process the arguments
   this->SetArgs(args);
   if (cmSystemTools::GetErrorOccurredFlag()) {
@@ -3087,6 +3089,7 @@ int cmake::Run(std::vector<std::string> const& args, bool noconfigure)
   std::string message = cmStrCat("Build files have been written to: ",
                                  this->GetHomeOutputDirectory());
   this->UpdateProgress(message, -1);
+  cmPathCounter_Print();
   return ret;
 }
 
