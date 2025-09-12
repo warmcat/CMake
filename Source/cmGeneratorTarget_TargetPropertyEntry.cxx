@@ -2,7 +2,6 @@
    file LICENSE.rst or https://cmake.org/licensing for details.  */
 /* clang-format off */
 #include "cmGeneratorTarget.h"
-#include "cmPathCounter.h"
 /* clang-format on */
 
 #include <map>
@@ -32,7 +31,6 @@ public:
     : cmGeneratorTarget::TargetPropertyEntry(item)
     , PropertyValue(std::move(propertyValue))
   {
-    cmPathCounter_CheckPath(this->PropertyValue.Value);
   }
 
   std::string const& Evaluate(cmLocalGenerator*, std::string const&,

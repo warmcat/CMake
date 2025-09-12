@@ -61,7 +61,6 @@ add_library(ManifestLib INTERFACE)
 #
 add_library(
   CMakeLib
-  cmPathCounter.cxx
   # Lexers/Parsers
   LexerParser/cmDependsJavaLexer.cxx
   LexerParser/cmDependsJavaLexer.h

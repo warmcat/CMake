@@ -23,7 +23,6 @@
 
 #include "cmAlgorithms.h"
 #include "cmComputeLinkInformation.h" // IWYU pragma: keep
-#include "cmPathCounter.h"
 #include "cmCryptoHash.h"
 #include "cmCxxModuleUsageEffects.h"
 #include "cmExperimental.h"
@@ -90,56 +89,50 @@ static void CreatePropertyGeneratorExpressions(
 cmGeneratorTarget::cmGeneratorTarget(cmTarget* t, cmLocalGenerator* lg)
   : Target(t)
 {
-  std::cout << "Creating cmGeneratorTarget for: " << t->GetName() << std::endl;
+  if (t->GetName() == "install/strip") {
+    cmBTStringRange entries = t->GetIncludeDirectoriesEntries();
+    if (!entries.empty()) {
+      const std::string& prop_val = entries.front().Value;
+      std::cout << "DEBUG: install/strip INCLUDE_DIRECTORIES size = "
+                << prop_val.size()
+                << " in directory " << lg->GetCurrentBinaryDirectory()
+                << std::endl;
+    }
+  }
   this->Makefile = this->Target->GetMakefile();
   this->LocalGenerator = lg;
   this->GlobalGenerator = this->LocalGenerator->GetGlobalGenerator();
 
   this->GlobalGenerator->ComputeTargetObjectDirectory(this);
 
-  cmPathCounter_SetContext("Target='" + this->GetName() +
-                           "' Property='INCLUDE_DIRECTORIES'");
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetIncludeDirectoriesEntries(),
                                      this->IncludeDirectoriesEntries);
 
-  cmPathCounter_SetContext("Target='" + this->GetName() +
-                           "' Property='COMPILE_OPTIONS'");
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetCompileOptionsEntries(),
                                      this->CompileOptionsEntries);
 
-  cmPathCounter_SetContext("Target='" + this->GetName() +
-                           "' Property='COMPILE_FEATURES'");
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetCompileFeaturesEntries(),
                                      this->CompileFeaturesEntries);
 
-  cmPathCounter_SetContext("Target='" + this->GetName() +
-                           "' Property='COMPILE_DEFINITIONS'");
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetCompileDefinitionsEntries(),
                                      this->CompileDefinitionsEntries);
 
-  cmPathCounter_SetContext("Target='" + this->GetName() +
-                           "' Property='LINK_OPTIONS'");
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetLinkOptionsEntries(),
                                      this->LinkOptionsEntries);
 
-  cmPathCounter_SetContext("Target='" + this->GetName() +
-                           "' Property='LINK_DIRECTORIES'");
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetLinkDirectoriesEntries(),
                                      this->LinkDirectoriesEntries);
 
-  cmPathCounter_SetContext("Target='" + this->GetName() +
-                           "' Property='PRECOMPILE_HEADERS'");
   CreatePropertyGeneratorExpressions(*lg->GetCMakeInstance(),
                                      t->GetPrecompileHeadersEntries(),
                                      this->PrecompileHeadersEntries);
 
-  cmPathCounter_SetContext("Target='" + this->GetName() + "' Property='SOURCES'");
   CreatePropertyGeneratorExpressions(
     *lg->GetCMakeInstance(), t->GetSourceEntries(), this->SourceEntries, true);
 

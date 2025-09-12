@@ -28,7 +28,6 @@
 #include "cmAlgorithms.h"
 #include "cmCMakePath.h"
 #include "cmCPackPropertiesGenerator.h"
-#include "cmPathCounter.h"
 #include "cmComputeTargetDepends.h"
 #include "cmCryptoHash.h"
 #include "cmCustomCommand.h"
@@ -2092,8 +2091,6 @@ void cmGlobalGenerator::CheckTargetProperties()
       std::string incDirs = cmGeneratorExpression::Preprocess(
         *incDirProp, cmGeneratorExpression::StripAllGeneratorExpressions);
 
-      cmPathCounter_SetContext("Target='" + target.second.GetName() +
-                               "' Property='INCLUDE_DIRECTORIES'");
       cmList incs(incDirs);
 
       for (std::string const& incDir : incs) {

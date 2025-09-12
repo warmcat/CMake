@@ -4,7 +4,6 @@
 #include "cmConfigure.h" // IWYU pragma: keep
 
 #include "cmList.h"
-#include "cmPathCounter.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -944,7 +943,6 @@ cmList::container_type::iterator cmList::Insert(
   std::string&& value, ExpandElements expandElements,
   EmptyElements emptyElements)
 {
-  cmPathCounter_CheckPath(value);
   auto delta = std::distance(container.cbegin(), pos);
   auto insertPos = container.begin() + delta;
 
