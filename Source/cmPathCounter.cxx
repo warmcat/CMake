@@ -8,12 +8,19 @@ static long long CWDCount = 0; // Number of strings containing CWD
 static long long CWDSize = 0;
 static long long CWDOccurrencesInStrings = 0; // Total number of CWD substrings
 static size_t MaxSemicolons = 0;
-static std::string LargestString; // The string with the most semicolons
+static std::string LargestString;
 static std::string CWD;
+static std::string CurrentContext;
+static std::string LargestStringContext;
 
 void cmPathCounter_SetCWD(const std::string& cwd)
 {
   CWD = cwd;
+}
+
+void cmPathCounter_SetContext(const std::string& context)
+{
+  CurrentContext = context;
 }
 
 void cmPathCounter_CheckPath(const std::string& path)
@@ -39,6 +46,7 @@ void cmPathCounter_CheckPath(const std::string& path)
     if (semicolon_count > MaxSemicolons) {
       MaxSemicolons = semicolon_count;
       LargestString = path;
+      LargestStringContext = CurrentContext;
     }
   }
 }
@@ -50,5 +58,6 @@ void cmPathCounter_Print()
   std::cout << "PathCounter CWD total occurrences: " << CWDOccurrencesInStrings << std::endl;
   std::cout << "PathCounter CWD total size: " << CWDSize << std::endl;
   std::cout << "PathCounter Max Semicolons: " << MaxSemicolons << std::endl;
+  std::cout << "PathCounter Largest String Context: " << LargestStringContext << std::endl;
   std::cout << "PathCounter Largest String: " << LargestString << std::endl;
 }
