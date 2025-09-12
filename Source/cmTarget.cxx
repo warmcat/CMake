@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 #include <iterator>
 #include <map>
 #include <set>
@@ -2069,6 +2070,11 @@ bool IsSettableProperty(cmMakefile* context, cmTarget* target,
 
 void cmTarget::SetProperty(std::string const& prop, cmValue value)
 {
+  if (prop == "INCLUDE_DIRECTORIES") {
+    std::cout << "Target='" << this->GetName() << "' "
+              << "SetProperty(INCLUDE_DIRECTORIES, '" << (value ? *value : "")
+              << "')" << std::endl;
+  }
   if (!IsSettableProperty(this->impl->Makefile, this, prop)) {
     return;
   }
@@ -2182,6 +2188,11 @@ void cmTarget::AppendProperty(std::string const& prop,
                               cm::optional<cmListFileBacktrace> const& bt,
                               bool asString)
 {
+  if (prop == "INCLUDE_DIRECTORIES") {
+    std::cout << "Target='" << this->GetName() << "' "
+              << "AppendProperty(INCLUDE_DIRECTORIES, '" << value << "')"
+              << std::endl;
+  }
   if (!IsSettableProperty(this->impl->Makefile, this, prop)) {
     return;
   }
@@ -2435,6 +2446,8 @@ void cmTarget::FinalizeTargetConfiguration(cmBTStringRange compileDefinitions)
 
 void cmTarget::InsertInclude(BT<std::string> const& entry, bool before)
 {
+  std::cout << "Target='" << this->GetName() << "' "
+            << "InsertInclude('" << entry.Value << "')" << std::endl;
   this->impl->IncludeDirectories.WriteDirect(
     entry,
     before ? UsageRequirementProperty::Action::Prepend

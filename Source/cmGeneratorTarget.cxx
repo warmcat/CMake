@@ -9,7 +9,6 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
-#include <iostream>
 #include <sstream>
 #include <type_traits>
 #include <unordered_set>
@@ -89,14 +88,6 @@ static void CreatePropertyGeneratorExpressions(
 cmGeneratorTarget::cmGeneratorTarget(cmTarget* t, cmLocalGenerator* lg)
   : Target(t)
 {
-  if (t->GetName() == "install/strip") {
-    cmBTStringRange entries = t->GetIncludeDirectoriesEntries();
-    if (!entries.empty()) {
-      const std::string& prop_val = entries.begin()->Value;
-      std::cout << "DEBUG: install/strip UNEVALUATED INCLUDE_DIRECTORIES: "
-                << prop_val << std::endl;
-    }
-  }
   this->Makefile = this->Target->GetMakefile();
   this->LocalGenerator = lg;
   this->GlobalGenerator = this->LocalGenerator->GetGlobalGenerator();
